@@ -50,9 +50,9 @@ kelompok10/
 
 ### 1. Clone / Ekstrak Proyek
 
-Letakkan folder `kelompok10` di dalam direktori web server kamu:
-- **XAMPP**: `C:/xampp/htdocs/kelompok10`
-- **LAMP**: `/var/www/html/kelompok10`
+Letakkan folder `Thebaseten` di dalam direktori web server kamu:
+- **XAMPP**: `C:/xampp/htdocs/Thebaseten`
+- **LAMP**: `/var/www/html/Thebaseten`
 
 ### 2. Import Database
 
