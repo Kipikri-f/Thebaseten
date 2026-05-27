@@ -7,7 +7,7 @@ Sistem Informasi Manajemen Data Akademik berbasis **PHP & MySQL**, dibuat oleh *
 ## 📁 Struktur Proyek
 
 ```
-kelompok10/
+Thebaseten/
 ├── index.php               # Shell utama aplikasi (layout + routing)
 ├── login.php               # Halaman login
 ├── logout.php              # Handler logout
