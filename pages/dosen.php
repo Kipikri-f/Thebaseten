@@ -6,7 +6,7 @@
 require_once __DIR__ . '/../includes/koneksi.php';
 
 // --- CREATE / UPDATE via POST ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (canEdit() && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $nid       = mysqli_real_escape_string($link, trim($_POST['nid'] ?? ''));
     $namadosen = mysqli_real_escape_string($link, trim($_POST['namadosen'] ?? ''));
     $act       = $_POST['action'] ?? '';
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- DELETE via GET ---
-if (isset($_GET['delete'])) {
+if (canEdit() && isset($_GET['delete'])) {
     $del = mysqli_real_escape_string($link, $_GET['delete']);
     mysqli_query($link, "DELETE FROM tbl_dosen WHERE nid='$del'");
     header('Location: index.php?hal=dosen');
@@ -35,7 +35,7 @@ $editMode = false;
 $editNid  = '';
 $editNama = '';
 
-if (isset($_GET['edit'])) {
+if (canEdit() && isset($_GET['edit'])) {
     $editId = mysqli_real_escape_string($link, $_GET['edit']);
     $res    = mysqli_query($link, "SELECT * FROM tbl_dosen WHERE nid='$editId'");
     if ($res && mysqli_num_rows($res) === 1) {
@@ -51,8 +51,11 @@ $result = mysqli_query($link, "SELECT * FROM tbl_dosen ORDER BY namadosen ASC");
 
 <div class="box">
     <h2>📋 Data Dosen</h2>
-    <p class="subjudul">Kelola data dosen pengajar</p>
+    <p class="subjudul">
+        <?= canEdit() ? 'Kelola data dosen pengajar' : '👁️ Mode View — hubungi Admin untuk perubahan data' ?>
+    </p>
 
+    <?php if (canEdit()): ?>
     <h3><?= $editMode ? 'Edit Data Dosen' : 'Tambah Dosen Baru' ?></h3>
 
     <form method="POST" action="index.php?hal=dosen">
@@ -76,6 +79,7 @@ $result = mysqli_query($link, "SELECT * FROM tbl_dosen ORDER BY namadosen ASC");
             <?php endif; ?>
         </div>
     </form>
+    <?php endif; ?>
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -84,7 +88,7 @@ $result = mysqli_query($link, "SELECT * FROM tbl_dosen ORDER BY namadosen ASC");
                     <th>No</th>
                     <th>NID</th>
                     <th>Nama Dosen</th>
-                    <th>Aksi</th>
+                    <?php if (canEdit()): ?><th>Aksi</th><?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -97,15 +101,18 @@ $result = mysqli_query($link, "SELECT * FROM tbl_dosen ORDER BY namadosen ASC");
                     <td><?= $no++ ?></td>
                     <td><?= htmlspecialchars($row['nid']) ?></td>
                     <td><?= htmlspecialchars($row['namadosen']) ?></td>
+                    <?php if (canEdit()): ?>
                     <td>
                         <a class="btn-edit"  href="index.php?hal=dosen&edit=<?= urlencode($row['nid']) ?>">Edit</a>
                         <a class="btn-hapus" href="index.php?hal=dosen&delete=<?= urlencode($row['nid']) ?>"
                            onclick="return confirm('Hapus dosen ini?')">Hapus</a>
                     </td>
+                    <?php endif; ?>
                 </tr>
             <?php endwhile;
             } else {
-                echo "<tr><td colspan='4' class='no-data'>Belum ada data dosen.</td></tr>";
+                $colspan = canEdit() ? 4 : 3;
+                echo "<tr><td colspan='$colspan' class='no-data'>Belum ada data dosen.</td></tr>";
             } ?>
             </tbody>
         </table>

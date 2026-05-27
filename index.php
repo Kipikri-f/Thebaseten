@@ -8,6 +8,12 @@ require_once 'includes/helpers.php';
 
 $hal = isset($_GET['hal']) ? $_GET['hal'] : 'home';
 
+// Guest can only see home
+if (isGuest() && $hal !== 'home') {
+    header('Location: index.php?hal=home');
+    exit;
+}
+
 $pages = [
     'home'       => 'pages/home.php',
     'mahasiswa'  => 'pages/mahasiswa.php',
@@ -29,6 +35,14 @@ $nav_items = [
     'querynilai' => ['icon' => '📊', 'label' => 'Nilai Mahasiswa'],
     'anggota'    => ['icon' => '👥', 'label' => 'Anggota Kelompok'],
 ];
+
+$role = getUserRole();
+$roleBadge = [
+    'admin'  => ['label' => 'Admin',  'class' => 'role-badge-admin'],
+    'member' => ['label' => 'Member', 'class' => 'role-badge-member'],
+    'guest'  => ['label' => 'Guest',  'class' => 'role-badge-guest'],
+];
+$badge = $roleBadge[$role] ?? $roleBadge['guest'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -47,7 +61,9 @@ $nav_items = [
     </button>
 
     <div class="topbar-brand">
-        <img src="gambar/unida.png" alt="Logo UNIDA" class="topbar-logo">
+        <div class="topbar-logo-wrap">
+            <img src="gambar/unida.png" alt="Logo UNIDA" class="topbar-logo">
+        </div>
         <div>
             <h1>BasisData2026</h1>
             <span>Universitas Djuanda</span>
@@ -60,6 +76,7 @@ $nav_items = [
             <span class="user-pill">
                 <span>&#128100;</span>
                 <?= htmlspecialchars($_SESSION['username'] ?? 'User') ?>
+                <span class="role-badge <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
             </span>
             <a href="logout.php" class="btn-logout" onclick="return confirm('Keluar dari aplikasi?')">
                 &#128275; Logout
@@ -80,7 +97,10 @@ $nav_items = [
             <span class="nav-label">Navigation</span>
         </div>
         <nav>
-            <?php foreach ($nav_items as $key => $item): ?>
+            <?php foreach ($nav_items as $key => $item):
+                // Hide non-home pages for guest
+                if (isGuest() && $key !== 'home') continue;
+            ?>
                 <a href="index.php?hal=<?= $key ?>"
                    class="nav-link <?= ($hal === $key) ? 'active' : '' ?>">
                     <span class="nav-icon"><?= $item['icon'] ?></span>
@@ -88,6 +108,15 @@ $nav_items = [
                 </a>
             <?php endforeach; ?>
         </nav>
+
+        <?php if (!isGuest()): ?>
+        <div class="sidebar-role-info">
+            <div class="sidebar-role-badge <?= $badge['class'] ?>">
+                <?= $role === 'admin' ? '🛡️ Admin — Full Access' : '👁️ Member — View Only' ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="sidebar-footer">
             <a href="logout.php" class="nav-link nav-logout"
                onclick="return confirm('Keluar dari aplikasi?')">

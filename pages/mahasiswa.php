@@ -7,8 +7,14 @@ require_once __DIR__ . '/../includes/koneksi.php';
 
 $action = $_GET['action'] ?? 'tampil';
 
+// Block non-admin from edit/delete/tambah
+if (!canEdit() && in_array($action, ['tambah', 'edit', 'delete'])) {
+    header('Location: index.php?hal=mahasiswa&msg=no_access');
+    exit;
+}
+
 // --- TAMBAH ---
-if (isset($_POST['submit_tambah'])) {
+if (canEdit() && isset($_POST['submit_tambah'])) {
     $nim     = mysqli_real_escape_string($link, trim($_POST['nim']));
     $namamhs = mysqli_real_escape_string($link, trim($_POST['namamhs']));
 
@@ -24,7 +30,7 @@ if (isset($_POST['submit_tambah'])) {
 }
 
 // --- EDIT ---
-if (isset($_POST['submit_edit'])) {
+if (canEdit() && isset($_POST['submit_edit'])) {
     $nim     = mysqli_real_escape_string($link, $_POST['nim']);
     $namamhs = mysqli_real_escape_string($link, trim($_POST['namamhs']));
 
@@ -40,7 +46,7 @@ if (isset($_POST['submit_edit'])) {
 }
 
 // --- HAPUS ---
-if ($action === 'delete' && isset($_GET['nim'])) {
+if (canEdit() && $action === 'delete' && isset($_GET['nim'])) {
     $nim = mysqli_real_escape_string($link, $_GET['nim']);
     if (mysqli_query($link, "DELETE FROM tbl_mhs WHERE nim='$nim'")) {
         header('Location: index.php?hal=mahasiswa&msg=deleted');
@@ -52,7 +58,7 @@ if ($action === 'delete' && isset($_GET['nim'])) {
 
 // Fetch edit data
 $data_edit = null;
-if ($action === 'edit' && isset($_GET['nim'])) {
+if (canEdit() && $action === 'edit' && isset($_GET['nim'])) {
     $nim_get = mysqli_real_escape_string($link, $_GET['nim']);
     $res     = mysqli_query($link, "SELECT * FROM tbl_mhs WHERE nim='$nim_get'");
     $data_edit = mysqli_fetch_array($res);
@@ -68,7 +74,9 @@ $msg = $_GET['msg'] ?? '';
 
 <div class="box">
     <h2>🎓 Data Mahasiswa</h2>
-    <p class="subjudul">Kelola data mahasiswa dengan mudah</p>
+    <p class="subjudul">
+        <?= canEdit() ? 'Kelola data mahasiswa dengan mudah' : '👁️ Mode View — hubungi Admin untuk perubahan data' ?>
+    </p>
 
     <?php if ($msg === 'added'): ?>
         <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil ditambahkan.</div>
@@ -78,13 +86,15 @@ $msg = $_GET['msg'] ?? '';
         <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil dihapus.</div>
     <?php elseif ($msg === 'err'): ?>
         <div class="alert alert-error" style="margin-bottom:16px;">⚠️ Operasi gagal dilakukan.</div>
+    <?php elseif ($msg === 'no_access'): ?>
+        <div class="alert alert-error" style="margin-bottom:16px;">🔒 Akses ditolak. Hanya Admin yang dapat melakukan perubahan data.</div>
     <?php endif; ?>
 
     <?php if (isset($error)): ?>
         <div class="alert alert-error" style="margin-bottom:16px;">⚠️ <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <?php if ($action === 'tambah'): ?>
+    <?php if (canEdit() && $action === 'tambah'): ?>
 
         <h3>Tambah Data Mahasiswa</h3>
         <form method="POST" action="index.php?hal=mahasiswa&action=tambah">
@@ -102,7 +112,7 @@ $msg = $_GET['msg'] ?? '';
             </div>
         </form>
 
-    <?php elseif ($action === 'edit' && $data_edit): ?>
+    <?php elseif (canEdit() && $action === 'edit' && $data_edit): ?>
 
         <h3>Edit Data Mahasiswa</h3>
         <form method="POST" action="index.php?hal=mahasiswa&action=edit">
@@ -122,7 +132,9 @@ $msg = $_GET['msg'] ?? '';
 
     <?php else: ?>
 
+        <?php if (canEdit()): ?>
         <a href="index.php?hal=mahasiswa&action=tambah" class="btn-tambah">+ Tambah Data</a>
+        <?php endif; ?>
 
         <div class="table-wrapper">
             <table class="data-table">
@@ -131,7 +143,7 @@ $msg = $_GET['msg'] ?? '';
                         <th>No</th>
                         <th>NIM</th>
                         <th>Nama Mahasiswa</th>
-                        <th>Aksi</th>
+                        <?php if (canEdit()): ?><th>Aksi</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,15 +157,18 @@ $msg = $_GET['msg'] ?? '';
                         <td><?= $no++ ?></td>
                         <td><?= htmlspecialchars($data['nim']) ?></td>
                         <td><?= htmlspecialchars($data['namamhs']) ?></td>
+                        <?php if (canEdit()): ?>
                         <td>
                             <a class="btn-edit" href="index.php?hal=mahasiswa&action=edit&nim=<?= urlencode($data['nim']) ?>">Edit</a>
                             <a class="btn-hapus" href="index.php?hal=mahasiswa&action=delete&nim=<?= urlencode($data['nim']) ?>"
                                onclick="return confirm('Yakin ingin menghapus data mahasiswa ini?')">Hapus</a>
                         </td>
+                        <?php endif; ?>
                     </tr>
                 <?php endwhile;
                 } else {
-                    echo "<tr><td colspan='4' class='no-data'>Belum ada data mahasiswa.</td></tr>";
+                    $colspan = canEdit() ? 4 : 3;
+                    echo "<tr><td colspan='$colspan' class='no-data'>Belum ada data mahasiswa.</td></tr>";
                 } ?>
                 </tbody>
             </table>

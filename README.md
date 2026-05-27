@@ -59,11 +59,11 @@ Letakkan folder `kelompok10` di dalam direktori web server kamu:
 Buka phpMyAdmin atau MySQL CLI, lalu jalankan:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS learnclidatabase
+CREATE DATABASE IF NOT EXISTS (namadatabase)
   CHARACTER SET utf8
   COLLATE utf8_general_ci;
 
-USE learnclidatabase;
+USE (namadatabase);
 
 -- Tabel Mahasiswa
 CREATE TABLE tbl_mhs (
@@ -128,7 +128,7 @@ define('DB_NAME', 'learnclidatabase');
 Buka browser dan akses:
 
 ```
-http://localhost/kelompok10/login.php
+http://localhost/Thebaseten/login.php
 ```
 
 ---
@@ -138,7 +138,7 @@ http://localhost/kelompok10/login.php
 | Username | Password |
 |---|---|
 | `admin` | `admin123` |
-| `kelompok10` | `baseten2026` |
+| `memberten` | `baseten123` |
 
 > ⚠️ **Ubah credential ini** di file `login.php` sebelum deploy ke server publik. Idealnya gunakan database dengan password hash (bcrypt).
 
@@ -202,7 +202,7 @@ Nilai Akhir = (Tugas × 20%) + (UTS × 35%) + (UAS × 45%)
 
 ## 👥 Kelompok 10
 
-**TheBaseTen** — Mahasiswa Teknik Informatika  
+**TheBaseTen** — Mahasiswa Ilmu Komputer 
 Universitas Djuanda (UNIDA) — 2026
 
 ---

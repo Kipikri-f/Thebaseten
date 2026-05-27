@@ -9,7 +9,7 @@ $edit = false;
 $nim = $nid = $nim_lama = '';
 
 // --- SIMPAN ---
-if (isset($_POST['simpan'])) {
+if (canEdit() && isset($_POST['simpan'])) {
     $nim = mysqli_real_escape_string($link, $_POST['nim']);
     $nid = mysqli_real_escape_string($link, $_POST['nid']);
     $cek = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim' AND nid='$nid'");
@@ -23,7 +23,7 @@ if (isset($_POST['simpan'])) {
 }
 
 // --- HAPUS ---
-if (isset($_GET['hapus'])) {
+if (canEdit() && isset($_GET['hapus'])) {
     $nim = mysqli_real_escape_string($link, $_GET['hapus']);
     mysqli_query($link, "DELETE FROM tbl_dopem WHERE nim='$nim'");
     header('Location: index.php?hal=dopem&msg=deleted');
@@ -31,7 +31,7 @@ if (isset($_GET['hapus'])) {
 }
 
 // --- EDIT ---
-if (isset($_GET['edit'])) {
+if (canEdit() && isset($_GET['edit'])) {
     $edit    = true;
     $nim_e   = mysqli_real_escape_string($link, $_GET['edit']);
     $q       = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim_e'");
@@ -44,7 +44,7 @@ if (isset($_GET['edit'])) {
 }
 
 // --- UPDATE ---
-if (isset($_POST['update'])) {
+if (canEdit() && isset($_POST['update'])) {
     $nim      = mysqli_real_escape_string($link, $_POST['nim']);
     $nid      = mysqli_real_escape_string($link, $_POST['nid']);
     $nim_lama = mysqli_real_escape_string($link, $_POST['nim_lama']);
@@ -63,7 +63,9 @@ $msg = $_GET['msg'] ?? '';
 
 <div class="box">
     <h2>👨‍🏫 Data Dosen Pembimbing</h2>
-    <p class="subjudul">Kelola relasi mahasiswa dengan dosen pembimbingnya</p>
+    <p class="subjudul">
+        <?= canEdit() ? 'Kelola relasi mahasiswa dengan dosen pembimbingnya' : '👁️ Mode View — hubungi Admin untuk perubahan data' ?>
+    </p>
 
     <?php if ($msg === 'added'): ?>
         <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil ditambahkan.</div>
@@ -77,6 +79,7 @@ $msg = $_GET['msg'] ?? '';
         <div class="alert alert-error" style="margin-bottom:16px;">⚠️ <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
+    <?php if (canEdit()): ?>
     <h3><?= $edit ? 'Edit Dosen Pembimbing' : 'Tambah Dosen Pembimbing' ?></h3>
 
     <form method="POST" action="index.php?hal=dopem">
@@ -123,6 +126,7 @@ $msg = $_GET['msg'] ?? '';
             <?php endif; ?>
         </div>
     </form>
+    <?php endif; ?>
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -133,7 +137,7 @@ $msg = $_GET['msg'] ?? '';
                     <th>Nama Mahasiswa</th>
                     <th>NID</th>
                     <th>Nama Dosen</th>
-                    <th>Aksi</th>
+                    <?php if (canEdit()): ?><th>Aksi</th><?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -155,15 +159,21 @@ $msg = $_GET['msg'] ?? '';
                     <td><?= htmlspecialchars($row['namamhs']) ?></td>
                     <td><?= htmlspecialchars($row['nid']) ?></td>
                     <td><?= htmlspecialchars($row['namadosen']) ?></td>
+                    <?php if (canEdit()): ?>
                     <td>
                         <a class="btn-edit"  href="index.php?hal=dopem&edit=<?= urlencode($row['nim']) ?>">Edit</a>
                         <a class="btn-hapus" href="index.php?hal=dopem&hapus=<?= urlencode($row['nim']) ?>"
                            onclick="return confirm('Yakin hapus data ini?')">Hapus</a>
                     </td>
+                    <?php else: ?>
+                    <td></td>
+                    <?php endif; ?>
                 </tr>
             <?php endwhile; ?>
             <?php if (!$ada): ?>
-                <tr><td colspan="6" class="no-data">Belum ada data dosen pembimbing.</td></tr>
+                <tr>
+                    <td colspan="<?= canEdit() ? 6 : 5 ?>" class="no-data">Belum ada data dosen pembimbing.</td>
+                </tr>
             <?php endif; ?>
             </tbody>
         </table>

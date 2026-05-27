@@ -1,6 +1,6 @@
 /* =====================================================
    THEBASETEN — style.css
-   Clean, modern, fully responsive
+   Clean, modern, fully responsive — v2.0
    ===================================================== */
 
 /* ---------- RESET & BASE ---------- */
@@ -31,10 +31,11 @@
     --radius:    12px;
     --sidebar-w: 220px;
     --topbar-h:  64px;
+    --footer-h:  46px;
     --transition: 0.2s ease;
 }
 
-html { font-size: 16px; scroll-behavior: smooth; }
+html { font-size: 16px; scroll-behavior: smooth; height: 100%; }
 
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -42,6 +43,8 @@ body {
     color: var(--gray-800);
     min-height: 100vh;
     line-height: 1.5;
+    display: flex;
+    flex-direction: column;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -84,16 +87,33 @@ img { max-width: 100%; display: block; }
     padding: 36px 32px 28px;
     text-align: center;
     color: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* === LOGO BULAT FIX === */
+.login-logo-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.35);
+    background: var(--white);
+    margin: 0 auto 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .login-logo {
-    width: 72px;
-    height: 72px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
     border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.3);
-    margin: 0 auto 14px;
-    background: rgba(255,255,255,0.1);
+    display: block;
 }
 
 .login-header h1 {
@@ -111,11 +131,60 @@ img { max-width: 100%; display: block; }
     margin-top: 4px;
 }
 
+/* Role Tabs */
+.role-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.role-tab {
+    flex: 1;
+    padding: 14px 10px;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.role-tab.active {
+    color: var(--green-700);
+    border-bottom-color: var(--green-600);
+    background: var(--green-50);
+}
+
+.role-tab:hover:not(.active) {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+/* Role hint banner */
+.role-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 32px 0;
+    padding: 10px 14px;
+    background: var(--green-50);
+    border: 1px solid var(--green-200);
+    border-radius: 8px;
+    font-size: 0.83rem;
+    color: var(--green-800);
+}
+
 .login-form {
-    padding: 28px 32px 24px;
+    padding: 20px 32px 8px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
 }
 
 .input-icon-wrap {
@@ -148,24 +217,86 @@ img { max-width: 100%; display: block; }
     padding: 4px;
 }
 
+/* === BTN LOGIN — CENTERED === */
 .btn-login {
-    background: var(--green-700);
+    background: linear-gradient(135deg, var(--green-700), var(--green-600));
     color: var(--white);
     border: none;
     border-radius: 10px;
-    padding: 13px;
+    padding: 13px 32px;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
-    width: 100%;
-    margin-top: 4px;
+    width: auto;
+    min-width: 160px;
+    margin: 8px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(21,128,61,0.25);
 }
 
 .btn-login:hover {
-    background: var(--green-900);
-    box-shadow: 0 4px 14px rgba(21,128,61,0.4);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    box-shadow: 0 6px 20px rgba(21,128,61,0.45);
+    transform: translateY(-2px);
+}
+
+/* Divider */
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 32px 0;
+    color: var(--gray-300);
+    font-size: 0.82rem;
+}
+
+.login-divider::before, .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-300);
+}
+
+.login-divider span { color: var(--gray-500); }
+
+/* Guest section */
+.guest-section {
+    padding: 16px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-guest {
+    background: transparent;
+    color: var(--gray-700);
+    border: 2px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-guest:hover {
+    border-color: var(--gray-500);
+    background: var(--gray-100);
+}
+
+.guest-note {
+    color: var(--gray-500);
+    font-size: 0.78rem;
+    text-align: center;
 }
 
 .login-hint {
@@ -174,6 +305,7 @@ img { max-width: 100%; display: block; }
     color: var(--gray-500);
     font-size: 0.82rem;
 }
+
 .login-hint code {
     background: var(--gray-100);
     border-radius: 4px;
@@ -201,7 +333,6 @@ img { max-width: 100%; display: block; }
 .alert-error { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
 .alert-success { background: var(--green-100); color: var(--green-800); border: 1px solid var(--green-200); }
 
-/* First alert inside login card spacing */
 .login-card .alert { margin: 16px 32px 0; }
 
 
@@ -249,14 +380,27 @@ img { max-width: 100%; display: block; }
     flex: 1;
 }
 
-.topbar-logo {
-    width: 38px;
-    height: 38px;
-    object-fit: contain;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.15);
-    padding: 3px;
+/* === TOPBAR LOGO BULAT FIX === */
+.topbar-logo-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: var(--white);
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.topbar-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+    display: block;
 }
 
 .topbar-brand h1 {
@@ -306,6 +450,20 @@ img { max-width: 100%; display: block; }
     white-space: nowrap;
 }
 
+/* Role Badges */
+.role-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.role-badge-admin  { background: #fbbf24; color: #78350f; }
+.role-badge-member { background: #60a5fa; color: #1e3a5f; }
+.role-badge-guest  { background: #d1d5db; color: #374151; }
+
 .btn-logout {
     background: rgba(220,38,38,0.75);
     color: var(--white);
@@ -327,13 +485,14 @@ img { max-width: 100%; display: block; }
 
 
 /* ===================================================
-   LAYOUT
+   LAYOUT — sticky footer
    =================================================== */
 
 .app-layout {
     display: flex;
     margin-top: var(--topbar-h);
-    min-height: calc(100vh - var(--topbar-h) - 46px);
+    flex: 1;
+    min-height: 0;
 }
 
 /* ===================================================
@@ -353,6 +512,7 @@ img { max-width: 100%; display: block; }
     z-index: 900;
     overflow-y: auto;
     transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    padding-bottom: var(--footer-h);
 }
 
 .sidebar-overlay {
@@ -411,9 +571,26 @@ nav { flex: 1; padding: 8px 0; }
 
 .nav-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
 
+.sidebar-role-info {
+    padding: 10px 14px;
+}
+
+.sidebar-role-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.sidebar-role-badge.role-badge-admin  { background: rgba(251,191,36,0.2);  color: #fbbf24; }
+.sidebar-role-badge.role-badge-member { background: rgba(96,165,250,0.2);   color: #93c5fd; }
+
 .sidebar-footer {
     padding: 10px 0 20px;
     border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: auto;
 }
 
 .nav-logout { color: #fca5a5 !important; }
@@ -429,16 +606,29 @@ nav { flex: 1; padding: 8px 0; }
     margin-left: var(--sidebar-w);
     padding: 24px;
     min-width: 0;
+    padding-bottom: calc(var(--footer-h) + 24px);
 }
 
+/* ===================================================
+   FOOTER — FIXED STICKY
+   =================================================== */
+
 .app-footer {
-    margin-left: var(--sidebar-w);
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-w);
+    right: 0;
+    height: var(--footer-h);
     background: var(--green-900);
     color: var(--green-200);
     text-align: center;
     font-size: 0.82rem;
-    padding: 12px 24px;
+    padding: 0 24px;
     border-top: 3px solid var(--green-400);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 800;
 }
 
 
@@ -490,6 +680,19 @@ nav { flex: 1; padding: 8px 0; }
     margin-bottom: 20px;
 }
 
+.welcome-badge {
+    display: inline-block;
+    background: var(--green-900);
+    color: var(--green-200);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+}
+
 .welcome-box h2 {
     color: var(--green-900);
     font-size: 1.9rem;
@@ -504,6 +707,62 @@ nav { flex: 1; padding: 8px 0; }
     font-size: 0.95rem;
     line-height: 1.7;
     margin-top: 4px;
+}
+
+/* Stats Row */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid #e7f5e9;
+    box-shadow: var(--shadow-sm);
+    padding: 24px 16px;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-600), var(--green-400));
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--green-200);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--green-900);
+    font-family: Georgia, serif;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .info-grid {
@@ -530,6 +789,50 @@ nav { flex: 1; padding: 8px 0; }
 
 .info-card .icon { font-size: 1.7rem; display: block; margin-bottom: 6px; }
 .info-card p { color: var(--green-700); font-weight: 600; font-size: 0.85rem; }
+
+/* Guest locked box */
+.guest-locked-box {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.guest-lock-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.guest-locked-box h3 {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--gray-700);
+    margin-bottom: 10px;
+}
+
+.guest-locked-box p {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 0 auto 20px;
+}
+
+.btn-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-700);
+    color: var(--white);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.btn-login-link:hover {
+    background: var(--green-900);
+    transform: translateY(-1px);
+}
 
 
 /* ===================================================
@@ -771,8 +1074,10 @@ td.no-data, p.no-data {
     font-size: 0.78rem;
     font-weight: 700;
 }
-.badge-lulus  { background: var(--green-100); color: var(--green-700); }
-.badge-tidak  { background: #fee2e2; color: var(--red); }
+.badge-lulus-sm { background: #14532d; color: #fff; }           /* Lulus Sangat Memuaskan — hijau gelap */
+.badge-lulus-m  { background: #bbf7d0; color: #14532d; }        /* Lulus Memuaskan — hijau muda */
+.badge-lulus    { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } /* Lulus — hijau tipis */
+.badge-tidak    { background: #f97316; color: #fff; }            /* Tidak Lulus — oranye */
 .badge-nilai  { background: #dbeafe; color: #1d4ed8; }
 .badge-sks    { background: #f3e8ff; color: #7c3aed; }
 
@@ -797,21 +1102,24 @@ td.no-data, p.no-data {
 
     .sidebar {
         transform: translateX(-100%);
+        bottom: 0;
     }
     .sidebar.open {
         transform: translateX(0);
         box-shadow: 4px 0 24px rgba(0,0,0,0.3);
     }
 
-    .main-content { margin-left: 0; padding: 16px; }
-    .app-footer   { margin-left: 0; }
+    .main-content { margin-left: 0; padding: 16px; padding-bottom: calc(var(--footer-h) + 16px); }
+    .app-footer   { left: 0; }
 
     .topbar-brand span { display: none; }
-
     .user-pill { display: none; }
 
     .form-row { flex-direction: column; }
     .form-row .sks-group { flex: 1; }
+
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat-value { font-size: 1.6rem; }
 }
 
 @media (max-width: 560px) {
@@ -822,6 +1130,7 @@ td.no-data, p.no-data {
     .welcome-box { padding: 24px 16px; }
     .welcome-box h2 { font-size: 1.5rem; }
     .info-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-row { grid-template-columns: repeat(1, 1fr); }
 
     table.data-table th,
     table.data-table td { font-size: 0.78rem; padding: 8px 10px; }
@@ -830,4 +1139,11 @@ td.no-data, p.no-data {
     .login-header { padding: 28px 20px 22px; }
     .login-hint { padding: 0 20px 16px; }
     .login-card .alert { margin: 14px 20px 0; }
+
+    .role-tabs { }
+    .role-tab { font-size: 0.82rem; padding: 12px 8px; }
+
+    .role-hint { margin: 12px 20px 0; }
+    .login-divider { margin: 12px 20px 0; }
+    .guest-section { padding: 12px 20px 20px; }
 }

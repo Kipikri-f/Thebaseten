@@ -6,7 +6,7 @@
 require_once __DIR__ . '/../includes/koneksi.php';
 
 // --- CREATE / UPDATE via POST ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (canEdit() && $_SERVER["REQUEST_METHOD"] === "POST") {
     $kodemk = mysqli_real_escape_string($link, trim($_POST['kodemk'] ?? ''));
     $namamk = mysqli_real_escape_string($link, trim($_POST['namamk'] ?? ''));
     $sks    = mysqli_real_escape_string($link, trim($_POST['sks']    ?? ''));
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- DELETE via GET ---
-if (isset($_GET['delete'])) {
+if (canEdit() && isset($_GET['delete'])) {
     $del = mysqli_real_escape_string($link, $_GET['delete']);
     mysqli_query($link, "DELETE FROM tbl_matakuliah WHERE kodemk='$del'");
     header('Location: index.php?hal=matakuliah');
@@ -35,7 +35,7 @@ if (isset($_GET['delete'])) {
 $editMode = false;
 $editKode = $editNama = $editSks = '';
 
-if (isset($_GET['edit'])) {
+if (canEdit() && isset($_GET['edit'])) {
     $editId = mysqli_real_escape_string($link, $_GET['edit']);
     $res    = mysqli_query($link, "SELECT * FROM tbl_matakuliah WHERE kodemk='$editId'");
     if ($res && mysqli_num_rows($res) === 1) {
@@ -54,6 +54,7 @@ $result = mysqli_query($link, "SELECT * FROM tbl_matakuliah ORDER BY kodemk ASC"
     <h2>📚 Data Mata Kuliah</h2>
     <p class="subjudul">Input dan modifikasi kurikulum serta bobot SKS mata kuliah</p>
 
+    <?php if (canEdit()): ?>
     <h3><?= $editMode ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah Baru' ?></h3>
 
     <form method="POST" action="index.php?hal=matakuliah">
@@ -89,6 +90,7 @@ $result = mysqli_query($link, "SELECT * FROM tbl_matakuliah ORDER BY kodemk ASC"
             <?php endif; ?>
         </div>
     </form>
+    <?php endif; ?>
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -110,9 +112,9 @@ $result = mysqli_query($link, "SELECT * FROM tbl_matakuliah ORDER BY kodemk ASC"
                     <td style="text-align:left;padding-left:24px;"><?= htmlspecialchars($row['namamk']) ?></td>
                     <td><span class="badge badge-sks"><?= htmlspecialchars($row['sks']) ?> SKS</span></td>
                     <td>
-                        <a class="btn-edit"  href="index.php?hal=matakuliah&edit=<?= urlencode($row['kodemk']) ?>">Edit</a>
+                        <?php if (canEdit()): ?><a class="btn-edit"  href="index.php?hal=matakuliah&edit=<?= urlencode($row['kodemk']) ?>">Edit</a>
                         <a class="btn-hapus" href="index.php?hal=matakuliah&delete=<?= urlencode($row['kodemk']) ?>"
-                           onclick="return confirm('Hapus mata kuliah ini?')">Hapus</a>
+                           onclick="return confirm('Hapus mata kuliah ini?')">Hapus</a><?php endif; ?>
                     </td>
                 </tr>
             <?php endwhile;

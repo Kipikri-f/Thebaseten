@@ -15,7 +15,11 @@ function hitungNilai(float $tugas, float $uts, float $uas): array
     elseif ($akhir >= 40) $hm = 'D';
     else                  $hm = 'E';
 
-    $status = ($akhir >= 55) ? 'Lulus' : 'Tidak Lulus';
+    if ($akhir >= 85)     $status = 'Lulus Sangat Memuaskan';
+    elseif ($akhir >= 70) $status = 'Lulus Memuaskan';
+    elseif ($akhir >= 55) $status = 'Lulus';
+    elseif ($akhir >= 40) $status = 'Tidak Lulus';
+    else                  $status = 'Tidak Lulus';
     return [$akhir, $hm, $status];
 }
 
@@ -173,7 +177,12 @@ $msg = $_GET['msg'] ?? '';
             $no = 1; $ada = false;
             while ($d = mysqli_fetch_assoc($q)):
                 $ada = true;
-                $badgeClass = ($d['status'] === 'Lulus') ? 'badge-lulus' : 'badge-tidak';
+                $badgeClass = match($d['status']) {
+                    'Lulus Sangat Memuaskan' => 'badge-lulus-sm',
+                    'Lulus Memuaskan'        => 'badge-lulus-m',
+                    'Lulus'                  => 'badge-lulus',
+                    default                  => 'badge-tidak',
+                };
             ?>
                 <tr>
                     <td><?= $no++ ?></td>
