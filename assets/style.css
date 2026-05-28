@@ -431,23 +431,107 @@ img { max-width: 100%; display: block; }
     white-space: nowrap;
 }
 
-.user-menu {
+.user-menu { display: none; } /* legacy, replaced by avatar dropdown */
+
+/* ─── Avatar Dropdown ────────────────────────────────────────────────────── */
+.avatar-dropdown-wrap {
+    position: relative;
+}
+
+.avatar-btn {
+    background: none;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.avatar-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+    border-radius: 50%;
+}
+
+.avatar-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    user-select: none;
+    pointer-events: none;
+}
+
+.avatar-icon { line-height: 1; }
+
+.avatar-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #1c1c1e;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    min-width: 190px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    z-index: 9999;
+    overflow: hidden;
+    animation: dropFadeIn 0.15s ease;
+}
+
+.avatar-dropdown.show { display: block; }
+
+@keyframes dropFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.avatar-dropdown-header {
+    padding: 14px 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.avatar-dropdown-name {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.avatar-dropdown-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 0;
+}
+
+.avatar-dropdown-logout {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.user-pill {
-    background: rgba(255,255,255,0.15);
-    color: var(--white);
-    border-radius: 20px;
-    padding: 5px 14px;
+    padding: 12px 16px;
+    color: #ff6b6b;
     font-size: 0.85rem;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+}
+
+.avatar-dropdown-logout:hover {
+    background: rgba(255,107,107,0.12);
 }
 
 /* Role Badges */
@@ -511,7 +595,7 @@ img { max-width: 100%; display: block; }
     left: 0;
     z-index: 900;
     overflow-y: auto;
-    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), width 0.28s cubic-bezier(0.4,0,0.2,1);
     padding-bottom: 0;
 }
 
@@ -525,19 +609,6 @@ img { max-width: 100%; display: block; }
 }
 
 .sidebar-overlay.show { display: block; }
-
-.sidebar-header {
-    padding: 18px 18px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.nav-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: var(--green-400);
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-}
 
 nav { flex: 1; padding: 8px 0; }
 
@@ -640,6 +711,7 @@ nav { flex: 1; padding: 8px 0; }
     padding: 24px;
     min-width: 0;
     padding-bottom: calc(var(--footer-h) + 24px);
+    transition: margin-left 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ===================================================
@@ -662,12 +734,45 @@ nav { flex: 1; padding: 8px 0; }
     align-items: center;
     justify-content: center;
     z-index: 800;
+    transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 
 
 /* ===================================================
    CARDS & BOXES
    =================================================== */
+
+/* ─── Page Header ────────────────────────────────────────────────────────── */
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e7f5e9;
+}
+
+.page-header-icon {
+    font-size: 2rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.page-header-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--green-900);
+    font-family: Georgia, serif;
+    margin: 0 0 2px 0;
+    line-height: 1.1;
+}
+
+.page-header-sub {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    margin: 0;
+    letter-spacing: 0.3px;
+}
 
 .box {
     background: var(--white);
@@ -676,6 +781,7 @@ nav { flex: 1; padding: 8px 0; }
     padding: 24px;
     margin-bottom: 20px;
     border: 1px solid #e7f5e9;
+    overflow: hidden;
 }
 
 .box h2 {
@@ -745,7 +851,7 @@ nav { flex: 1; padding: 8px 0; }
 /* Stats Row */
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 20px;
 }
@@ -1056,12 +1162,13 @@ a.btn-hapus:hover, .btn-hapus:hover { background: var(--red-d); transform: scale
     border-radius: 10px;
     margin-top: 20px;
     box-shadow: var(--shadow-sm);
+    max-width: 100%;
 }
 
 table.data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 480px;
+    min-width: 360px;
 }
 
 table.data-table th {
@@ -1151,7 +1258,7 @@ td.no-data, p.no-data {
     .form-row { flex-direction: column; }
     .form-row .sks-group { flex: 1; }
 
-    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .stat-value { font-size: 1.6rem; }
 }
 
@@ -1179,4 +1286,268 @@ td.no-data, p.no-data {
     .role-hint { margin: 12px 20px 0; }
     .login-divider { margin: 12px 20px 0; }
     .guest-section { padding: 12px 20px 20px; }
+}
+
+/* ─── Jadwal Kuliah ──────────────────────────────────────────────────────── */
+
+.jadwal-box { margin-bottom: 20px; }
+
+.jadwal-weekend {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px;
+    gap: 6px;
+}
+.jadwal-weekend-icon { font-size: 2.4rem; }
+.jadwal-weekend-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+.jadwal-weekend-sub {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin: 0;
+}
+
+.jadwal-table .badge-ruangan {
+    background: #e8f4fd;
+    color: #2d6a9f;
+    border: 1px solid #c5def3;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.dosen-cell {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-align: left;
+}
+
+.dosen-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.status-badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    display: inline-block;
+}
+.status-berlangsung {
+    background: #e6f9ee;
+    color: #1a7f3c;
+    border: 1px solid #a3e4b7;
+}
+.status-menunggu {
+    background: #f5f5f5;
+    color: #777;
+    border: 1px solid #ddd;
+}
+.status-selesai {
+    background: #eaf0fb;
+    color: #3d5a99;
+    border: 1px solid #b3c6ef;
+}
+
+/* ─── Sidebar collapse toggle button ─────────────────────────────────────── */
+
+/* ─── Collapsed sidebar ───────────────────────────────────────────────────── */
+:root { --sidebar-collapsed-w: 60px; }
+
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-w);
+}
+.sidebar.collapsed .nav-link-label,
+.sidebar.collapsed .sidebar-profile-info {
+    display: none;
+}
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px 0;
+    border-left: 3px solid transparent;
+}
+.sidebar.collapsed .nav-link:hover,
+.sidebar.collapsed .nav-link.active {
+    padding-left: 0;
+}
+.sidebar.collapsed .nav-icon {
+    width: auto;
+    font-size: 1.25rem;
+}
+.sidebar.collapsed .sidebar-profile {
+    justify-content: center;
+    padding: 10px 0 14px;
+}
+
+/* Main + footer shift when collapsed */
+.sidebar.collapsed ~ .main-content,
+body:has(.sidebar.collapsed) .main-content {
+    margin-left: var(--sidebar-collapsed-w);
+}
+body:has(.sidebar.collapsed) .app-footer {
+    left: var(--sidebar-collapsed-w);
+}
+
+/* ─── Data panel (Mahasiswa + Dosen side by side) ─────────────────────────── */
+
+.data-panel-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.data-panel-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 0;
+}
+
+.data-panel-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--green-700, #15803d);
+    margin: 0 0 2px;
+}
+
+.data-panel-scroll {
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #e5f5e9;
+}
+
+/* Thin scrollbar */
+.data-panel-scroll::-webkit-scrollbar { width: 5px; }
+.data-panel-scroll::-webkit-scrollbar-track { background: transparent; }
+.data-panel-scroll::-webkit-scrollbar-thumb { background: #b2dfdb; border-radius: 3px; }
+
+.data-panel-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.badge-nim {
+    background: #e8f4fd;
+    color: #2d6a9f;
+    border: 1px solid #c5def3;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .data-panel-row { grid-template-columns: 1fr; }
+}
+
+/* ─── Animated hamburger toggle button (sidebar header) ───────────────────── */
+
+.sidebar-header {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.nav-label {
+    display: none;
+}
+
+.sidebar-dashboard-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+    user-select: none;
+}
+
+.sidebar-toggle-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    color: var(--green-400);
+    position: relative;
+    overflow: hidden;
+}
+.sidebar-toggle-btn:hover {
+    background: rgba(74,222,128,0.15);
+    border-color: rgba(74,222,128,0.45);
+    box-shadow: 0 0 10px rgba(74,222,128,0.2);
+    color: #fff;
+}
+
+/* Two icons swap on toggle */
+.toggle-icon-wrap { position: relative; width: 18px; height: 18px; }
+
+.icon-grid,
+.icon-collapse {
+    position: absolute;
+    inset: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Default (expanded): show grid, hide collapse */
+.icon-grid     { opacity: 1; transform: scale(1)    rotate(0deg); }
+.icon-collapse { opacity: 0; transform: scale(0.7)  rotate(-30deg); }
+
+/* Collapsed state: show collapse icon, hide grid */
+.sidebar-toggle-btn.is-collapsed .icon-grid     { opacity: 0; transform: scale(0.7) rotate(30deg); }
+.sidebar-toggle-btn.is-collapsed .icon-collapse { opacity: 1; transform: scale(1)   rotate(0deg); }
+
+/* Collapsed: center the button since label is gone */
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 14px 0 10px;
+    gap: 0;
+}
+
+.sidebar.collapsed .sidebar-dashboard-label {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .sidebar-toggle-btn { display: none; }
 }

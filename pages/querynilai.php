@@ -87,7 +87,7 @@ $msg = $_GET['msg'] ?? '';
 
 <div class="box">
     <h2>📊 Data Nilai Mahasiswa</h2>
-    <p class="subjudul">Perhitungan: Tugas ×20% + UTS ×35% + UAS ×45%</p>
+    <p class="subjudul">Data nilai mahasiswa selama pembelajaran</p>
 
     <?php if ($msg === 'added'): ?>
         <div class="alert alert-success" style="margin-bottom:16px;">✅ Data nilai berhasil ditambahkan.</div>
