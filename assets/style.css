@@ -512,7 +512,7 @@ img { max-width: 100%; display: block; }
     z-index: 900;
     overflow-y: auto;
     transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-    padding-bottom: var(--footer-h);
+    padding-bottom: 0;
 }
 
 .sidebar-overlay {
@@ -571,30 +571,63 @@ nav { flex: 1; padding: 8px 0; }
 
 .nav-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
 
-.sidebar-role-info {
-    padding: 10px 14px;
-}
-
-.sidebar-role-badge {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 8px;
-    text-align: center;
-    letter-spacing: 0.2px;
-}
-
-.sidebar-role-badge.role-badge-admin  { background: rgba(251,191,36,0.2);  color: #fbbf24; }
-.sidebar-role-badge.role-badge-member { background: rgba(96,165,250,0.2);   color: #93c5fd; }
-
-.sidebar-footer {
-    padding: 10px 0 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+/* Discord-style profile panel at bottom of sidebar */
+.sidebar-profile {
     margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.25);
+    cursor: default;
+    user-select: none;
 }
 
-.nav-logout { color: #fca5a5 !important; }
-.nav-logout:hover { background: rgba(220,38,38,0.15) !important; border-left-color: var(--red) !important; }
+.sidebar-profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--green-600, #16a34a);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid var(--green-400, #4ade80);
+}
+
+.sidebar-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.sidebar-profile-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--white, #fff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-profile-role {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+    width: fit-content;
+    text-transform: uppercase;
+}
+
+.sidebar-profile-role.role-badge-admin  { background: rgba(251,191,36,0.2);  color: #fbbf24; }
+.sidebar-profile-role.role-badge-member { background: rgba(96,165,250,0.2);   color: #93c5fd; }
+.sidebar-profile-role.role-badge-guest  { background: rgba(156,163,175,0.2);  color: #9ca3af; }
 
 
 /* ===================================================

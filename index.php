@@ -65,7 +65,7 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
             <img src="gambar/unida.png" alt="Logo UNIDA" class="topbar-logo">
         </div>
         <div>
-            <h1>BasisData2026</h1>
+            <h1>Thebaseten</h1>
             <span>Universitas Djuanda</span>
         </div>
     </div>
@@ -110,20 +110,16 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
         </nav>
 
         <?php if (!isGuest()): ?>
-        <div class="sidebar-role-info">
-            <div class="sidebar-role-badge <?= $badge['class'] ?>">
-                <?= $role === 'admin' ? '🛡️ Admin — Full Access' : '👁️ Member — View Only' ?>
+        <div class="sidebar-profile">
+            <div class="sidebar-profile-avatar">
+                <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
+            </div>
+            <div class="sidebar-profile-info">
+                <span class="sidebar-profile-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
+                <span class="sidebar-profile-role <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
             </div>
         </div>
         <?php endif; ?>
-
-        <div class="sidebar-footer">
-            <a href="logout.php" class="nav-link nav-logout"
-               onclick="return confirm('Keluar dari aplikasi?')">
-                <span class="nav-icon">🚪</span>
-                <span>Logout</span>
-            </a>
-        </div>
     </aside>
 
     <!-- MAIN CONTENT -->

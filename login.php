@@ -61,7 +61,7 @@ if (isset($_GET['guest'])) {
             <div class="login-logo-wrap">
                 <img src="gambar/unida.png" alt="Logo UNIDA" class="login-logo">
             </div>
-            <h1>BasisData<span>2026</span></h1>
+            <h1>Thebase<span>TEN</span></h1>
             <p>Universitas Djuanda &mdash; Kelompok 10</p>
         </div>
 
