@@ -52,7 +52,7 @@ $result = mysqli_query($link, "SELECT * FROM tbl_dosen ORDER BY namadosen ASC");
 <div class="box">
     <h2>📋 Data Dosen</h2>
     <p class="subjudul">
-        <?= canEdit() ? 'Kelola data dosen pengajar' : '👁️ Mode View — hubungi Admin untuk perubahan data' ?>
+        <?= canEdit() ? 'Kelola data dosen pengajar' : 'Hubungi admin untuk perubahan data jika belum terubah' ?>
     </p>
 
     <?php if (canEdit()): ?>

@@ -75,7 +75,7 @@ $msg = $_GET['msg'] ?? '';
 <div class="box">
     <h2>🎓 Data Mahasiswa</h2>
     <p class="subjudul">
-        <?= canEdit() ? 'Kelola data mahasiswa dengan mudah' : '👁️ Mode View — hubungi Admin untuk perubahan data' ?>
+        <?= canEdit() ? 'Kelola data mahasiswa dengan mudah' : 'Hubungi Admin untuk perubahan data jika belum terubah' ?>
     </p>
 
     <?php if ($msg === 'added'): ?>
