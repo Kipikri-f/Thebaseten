@@ -20,12 +20,9 @@ if (canEdit() && isset($_POST['submit_tambah'])) {
 
     if ($nim !== '' && $namamhs !== '') {
         $query = "INSERT INTO tbl_mhs (nim, namamhs) VALUES ('$nim', '$namamhs')";
-        if (mysqli_query($link, $query)) {
-            header('Location: index.php?hal=mahasiswa&msg=added');
-            exit;
-        } else {
-            $error = 'Gagal menambah data. NIM mungkin sudah ada.';
-        }
+        $ok    = mysqli_query($link, $query);
+        header('Location: index.php?hal=mahasiswa&msg=' . ($ok ? 'added' : 'err'));
+        exit;
     }
 }
 
@@ -36,12 +33,9 @@ if (canEdit() && isset($_POST['submit_edit'])) {
 
     if ($namamhs !== '') {
         $query = "UPDATE tbl_mhs SET namamhs='$namamhs' WHERE nim='$nim'";
-        if (mysqli_query($link, $query)) {
-            header('Location: index.php?hal=mahasiswa&msg=updated');
-            exit;
-        } else {
-            $error = 'Gagal mengubah data.';
-        }
+        $ok    = mysqli_query($link, $query);
+        header('Location: index.php?hal=mahasiswa&msg=' . ($ok ? 'updated' : 'err_upd'));
+        exit;
     }
 }
 
@@ -69,7 +63,7 @@ if (canEdit() && $action === 'edit' && isset($_GET['nim'])) {
 }
 
 // Flash messages
-$msg = $_GET['msg'] ?? '';
+$msg = '';
 ?>
 
 <div class="box">
@@ -77,22 +71,6 @@ $msg = $_GET['msg'] ?? '';
     <p class="subjudul">
         <?= canEdit() ? 'Kelola data mahasiswa dengan mudah' : 'Hubungi Admin untuk perubahan data jika belum terubah' ?>
     </p>
-
-    <?php if ($msg === 'added'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil ditambahkan.</div>
-    <?php elseif ($msg === 'updated'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil diperbarui.</div>
-    <?php elseif ($msg === 'deleted'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil dihapus.</div>
-    <?php elseif ($msg === 'err'): ?>
-        <div class="alert alert-error" style="margin-bottom:16px;">⚠️ Operasi gagal dilakukan.</div>
-    <?php elseif ($msg === 'no_access'): ?>
-        <div class="alert alert-error" style="margin-bottom:16px;">🔒 Akses ditolak. Hanya Admin yang dapat melakukan perubahan data.</div>
-    <?php endif; ?>
-
-    <?php if (isset($error)): ?>
-        <div class="alert alert-error" style="margin-bottom:16px;">⚠️ <?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
 
     <?php if (canEdit() && $action === 'tambah'): ?>
 

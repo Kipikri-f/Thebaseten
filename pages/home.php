@@ -356,6 +356,11 @@ if (!isGuest()) {
     </div>
 </div>
 
+<!-- Page Footer -->
+<footer class="page-footer">
+    TheBaseTen &copy; 2026 &mdash; Kelompok 10 &middot; Universitas Djuanda
+</footer>
+
 <?php else: ?>
 
 <!-- Guest: Akses Terbatas -->

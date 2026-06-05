@@ -12,21 +12,23 @@ if (canEdit() && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $act       = $_POST['action'] ?? '';
 
     if ($act === 'create' && $nid !== '' && $namadosen !== '') {
-        mysqli_query($link, "INSERT INTO tbl_dosen (nid, namadosen) VALUES ('$nid', '$namadosen')");
+        $ok = mysqli_query($link, "INSERT INTO tbl_dosen (nid, namadosen) VALUES ('$nid', '$namadosen')");
+        header('Location: index.php?hal=dosen&msg=' . ($ok ? 'added' : 'err'));
     } elseif ($act === 'update' && isset($_POST['old_nid']) && $_POST['old_nid'] !== '') {
         $old = mysqli_real_escape_string($link, $_POST['old_nid']);
-        mysqli_query($link, "UPDATE tbl_dosen SET nid='$nid', namadosen='$namadosen' WHERE nid='$old'");
+        $ok  = mysqli_query($link, "UPDATE tbl_dosen SET nid='$nid', namadosen='$namadosen' WHERE nid='$old'");
+        header('Location: index.php?hal=dosen&msg=' . ($ok ? 'updated' : 'err_upd'));
+    } else {
+        header('Location: index.php?hal=dosen');
     }
-
-    header('Location: index.php?hal=dosen');
     exit;
 }
 
 // --- DELETE via GET ---
 if (canEdit() && isset($_GET['delete'])) {
     $del = mysqli_real_escape_string($link, $_GET['delete']);
-    mysqli_query($link, "DELETE FROM tbl_dosen WHERE nid='$del'");
-    header('Location: index.php?hal=dosen');
+    $ok  = mysqli_query($link, "DELETE FROM tbl_dosen WHERE nid='$del'");
+    header('Location: index.php?hal=dosen&msg=' . ($ok ? 'deleted' : 'err_del'));
     exit;
 }
 

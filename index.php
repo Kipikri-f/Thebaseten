@@ -29,13 +29,24 @@ $pages = [
 $page_file = $pages[$hal] ?? $pages['home'];
 
 $nav_items = [
-    'home'       => ['icon' => '🏠', 'label' => 'Home'],
-    'mahasiswa'  => ['icon' => '🎓', 'label' => 'Mahasiswa'],
-    'dosen'      => ['icon' => '📋', 'label' => 'Dosen'],
-    'dopem'      => ['icon' => '👨‍🏫', 'label' => 'Dosen Pembimbing'],
-    'matakuliah' => ['icon' => '📚', 'label' => 'Mata Kuliah'],
-    'querynilai' => ['icon' => '📊', 'label' => 'Nilai Mahasiswa'],
-    'anggota'    => ['icon' => '👥', 'label' => 'Anggota Kelompok'],
+    'home'       => ['icon' => 'home',       'label' => 'Home'],
+    'mahasiswa'  => ['icon' => 'mahasiswa',  'label' => 'Mahasiswa'],
+    'dosen'      => ['icon' => 'dosen',      'label' => 'Dosen'],
+    'dopem'      => ['icon' => 'dopem',      'label' => 'Dosen Pembimbing'],
+    'matakuliah' => ['icon' => 'matakuliah', 'label' => 'Mata Kuliah'],
+    'querynilai' => ['icon' => 'querynilai', 'label' => 'Nilai Mahasiswa'],
+    'anggota'    => ['icon' => 'anggota',    'label' => 'Anggota Kelompok'],
+];
+
+// SVG icon map
+$nav_svgs = [
+    'home' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>',
+    'mahasiswa' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3.33 2 8.67 2 12 0v-5"/></svg>',
+    'dosen' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M6 21v-1a6 6 0 0 1 12 0v1"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="4" y1="11" x2="4" y2="17"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="4" y1="17" x2="20" y2="17"/></svg>',
+    'dopem' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    'matakuliah' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+    'querynilai' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    'anggota' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>',
 ];
 
 $role = getUserRole();
@@ -100,17 +111,35 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
             </button>
             <div class="avatar-dropdown" id="avatarDropdown">
                 <div class="avatar-dropdown-header">
-                    <span class="avatar-dropdown-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
-                    <span class="role-badge <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
+                    <div class="avatar-dropdown-user-row">
+                        <span class="avatar-initial avatar-initial-sm" style="background:<?= $avatarBg ?>;"><?= htmlspecialchars($initials) ?></span>
+                        <div class="avatar-dropdown-user-info">
+                            <span class="avatar-dropdown-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
+                            <span class="role-badge <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
+                        </div>
+                    </div>
                 </div>
                 <div class="avatar-dropdown-divider"></div>
                 <!-- Switch Account button -->
                 <button class="avatar-dropdown-switch" onclick="openSwitchAccount()">
-                    <span>🔄</span> Switch Account
+                    <span class="avatar-dd-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
+                            <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
+                        </svg>
+                    </span>
+                    Switch Account
                 </button>
                 <div class="avatar-dropdown-divider"></div>
                 <a href="logout.php" class="avatar-dropdown-logout" onclick="return confirm('Keluar dari aplikasi?')">
-                    <span>🚪</span> Sign out
+                    <span class="avatar-dd-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </span>
+                    Sign out
                 </a>
             </div>
         </div>
@@ -162,7 +191,7 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
                 <a href="index.php?hal=<?= $key ?>"
                    class="nav-link <?= ($hal === $key) ? 'active' : '' ?>"
                    title="<?= $item['label'] ?>">
-                    <span class="nav-icon"><?= $item['icon'] ?></span>
+                    <span class="nav-icon nav-icon-svg"><?= $nav_svgs[$item['icon']] ?? '' ?></span>
                     <span class="nav-link-label"><?= $item['label'] ?></span>
                 </a>
             <?php endforeach; ?>
@@ -222,18 +251,24 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
 
 </div>
 
-<!-- ===== FOOTER ===== -->
-<footer class="app-footer">
-    TheBaseTen &copy; 2026 &mdash; Kelompok 10 &middot; Universitas Djuanda
-</footer>
-
 <!-- ===== SCROLL TO TOP ===== -->
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()" title="Back to top">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="18 15 12 9 6 15"/>
     </svg>
-    <span class="scroll-top-logo"></span>
 </button>
+
+<!-- ===== TOAST NOTIFICATION ===== -->
+<div class="toast-overlay" id="toastOverlay" onclick="closeToast()">
+    <div class="toast-card" onclick="event.stopPropagation()">
+        <div class="toast-icon-wrap" id="toastIconWrap">
+            <svg id="toastSvg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></svg>
+        </div>
+        <div class="toast-title" id="toastTitle"></div>
+        <div class="toast-sub"   id="toastSub"></div>
+        <button class="toast-close-btn" onclick="closeToast()">OK</button>
+    </div>
+</div>
 
 
 <!-- ===== SWITCH ACCOUNT MODAL OVERLAY ===== -->
@@ -342,7 +377,6 @@ function applySidebarState(collapsed) {
     const label    = document.getElementById('navLabel');
     const dbLabel  = document.getElementById('sidebarDashboardLabel');
     const main     = document.querySelector('.main-content');
-    const footer   = document.querySelector('.app-footer');
     const colW     = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed-w').trim();
     const fullW    = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w').trim();
 
@@ -352,14 +386,12 @@ function applySidebarState(collapsed) {
         if (label)   label.style.opacity = '0';
         if (dbLabel) dbLabel.style.opacity = '0';
         if (main)    main.style.marginLeft = colW;
-        if (footer)  footer.style.left     = colW;
     } else {
         sidebar.classList.remove('collapsed');
         if (btn)     btn.classList.remove('is-collapsed');
         if (label)   label.style.opacity = '1';
         if (dbLabel) dbLabel.style.opacity = '1';
         if (main)    main.style.marginLeft = fullW;
-        if (footer)  footer.style.left     = fullW;
     }
 }
 
@@ -520,6 +552,67 @@ if (mainContent) {
 window.addEventListener('scroll', function() {
     scrollTopBtn.classList.toggle('visible', window.scrollY > 200);
 });
+
+// ===== TOAST NOTIFICATION =====
+var TOAST_ICONS = {
+    success: '<polyline points="20 6 9 17 4 12"/>',
+    error:   '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+};
+
+function showToast(type, title, sub) {
+    var overlay = document.getElementById('toastOverlay');
+    var wrap    = document.getElementById('toastIconWrap');
+    var svg     = document.getElementById('toastSvg');
+    var titleEl = document.getElementById('toastTitle');
+    var subEl   = document.getElementById('toastSub');
+
+    wrap.className    = 'toast-icon-wrap ' + type;
+    svg.innerHTML     = TOAST_ICONS[type] || TOAST_ICONS.success;
+    titleEl.textContent = title;
+    subEl.textContent   = sub || '';
+
+    // Re-trigger animation by replacing the node
+    var newSvg = svg.cloneNode(true);
+    newSvg.innerHTML = TOAST_ICONS[type] || TOAST_ICONS.success;
+    svg.parentNode.replaceChild(newSvg, svg);
+
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeToast() {
+    var overlay = document.getElementById('toastOverlay');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+
+    // Remove msg param from URL without reload
+    var url = new URL(window.location.href);
+    url.searchParams.delete('msg');
+    history.replaceState(null, '', url.toString());
+}
+
+// Auto-trigger from URL ?msg=
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var msg    = params.get('msg');
+    if (!msg) return;
+
+    var map = {
+        'added':     ['success', 'Data berhasil ditambahkan',   ''],
+        'updated':   ['success', 'Data berhasil diperbarui',    ''],
+        'deleted':   ['success', 'Data berhasil dihapus',       ''],
+        'err':       ['error',   'Data tidak dapat ditambahkan','Terjadi kesalahan, coba lagi.'],
+        'err_upd':   ['error',   'Data tidak dapat diperbarui', 'Terjadi kesalahan, coba lagi.'],
+        'err_del':   ['error',   'Data tidak dapat dihapus',    'Terjadi kesalahan, coba lagi.'],
+        'no_access': ['error',   'Akses ditolak',               'Hanya Admin yang dapat melakukan perubahan.'],
+        'duplicate': ['error',   'Data tidak dapat ditambahkan','Data sudah ada atau NIM/ID duplikat.'],
+    };
+
+    var entry = map[msg];
+    if (entry) {
+        showToast(entry[0], entry[1], entry[2]);
+    }
+})();
 </script>
 
 </body>

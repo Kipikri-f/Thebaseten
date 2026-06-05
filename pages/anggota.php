@@ -10,8 +10,8 @@ if (isset($_POST['simpan'])) {
     $nim     = mysqli_real_escape_string($link, trim($_POST['nim']));
     $nama    = mysqli_real_escape_string($link, trim($_POST['namamhs']));
     $jurusan = mysqli_real_escape_string($link, trim($_POST['jurusan']));
-    mysqli_query($link, "INSERT INTO tbl_anggota VALUES('$nim','$nama','$jurusan')");
-    header('Location: index.php?hal=anggota&msg=added');
+    $ok = mysqli_query($link, "INSERT INTO tbl_anggota VALUES('$nim','$nama','$jurusan')");
+    header('Location: index.php?hal=anggota&msg=' . ($ok ? 'added' : 'err'));
     exit;
 }
 
@@ -21,21 +21,21 @@ if (isset($_POST['update'])) {
     $nim_baru = mysqli_real_escape_string($link, trim($_POST['nim_baru']));
     $nama     = mysqli_real_escape_string($link, trim($_POST['namamhs']));
     $jurusan  = mysqli_real_escape_string($link, trim($_POST['jurusan']));
-    mysqli_query($link, "UPDATE tbl_anggota SET nim='$nim_baru', namamhs='$nama', jurusan='$jurusan' WHERE nim='$nim_lama'");
-    header('Location: index.php?hal=anggota&msg=updated');
+    $ok = mysqli_query($link, "UPDATE tbl_anggota SET nim='$nim_baru', namamhs='$nama', jurusan='$jurusan' WHERE nim='$nim_lama'");
+    header('Location: index.php?hal=anggota&msg=' . ($ok ? 'updated' : 'err_upd'));
     exit;
 }
 
 // --- HAPUS ---
 if (isset($_GET['hapus'])) {
     $nim = mysqli_real_escape_string($link, $_GET['hapus']);
-    mysqli_query($link, "DELETE FROM tbl_anggota WHERE nim='$nim'");
-    header('Location: index.php?hal=anggota&msg=deleted');
+    $ok  = mysqli_query($link, "DELETE FROM tbl_anggota WHERE nim='$nim'");
+    header('Location: index.php?hal=anggota&msg=' . ($ok ? 'deleted' : 'err_del'));
     exit;
 }
 
 $action = $_GET['action'] ?? 'tampil';
-$msg    = $_GET['msg']    ?? '';
+$msg    = '';
 
 // Fetch edit data
 $data_edit = null;
@@ -49,14 +49,6 @@ if ($action === 'edit' && isset($_GET['nim'])) {
 <div class="box">
     <h2>👥 Anggota Kelompok</h2>
     <p class="subjudul">Kelompok 10 &mdash; Universitas Djuanda 2026</p>
-
-    <?php if ($msg === 'added'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data anggota berhasil ditambahkan.</div>
-    <?php elseif ($msg === 'updated'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data anggota berhasil diperbarui.</div>
-    <?php elseif ($msg === 'deleted'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data anggota berhasil dihapus.</div>
-    <?php endif; ?>
 
     <?php if ($action === 'tambah'): ?>
 

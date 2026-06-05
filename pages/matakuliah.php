@@ -13,21 +13,23 @@ if (canEdit() && $_SERVER["REQUEST_METHOD"] === "POST") {
     $act    = $_POST['action'] ?? '';
 
     if ($act === 'create' && $kodemk && $namamk && $sks) {
-        mysqli_query($link, "INSERT INTO tbl_matakuliah (kodemk, namamk, sks) VALUES ('$kodemk', '$namamk', '$sks')");
+        $ok = mysqli_query($link, "INSERT INTO tbl_matakuliah (kodemk, namamk, sks) VALUES ('$kodemk', '$namamk', '$sks')");
+        header('Location: index.php?hal=matakuliah&msg=' . ($ok ? 'added' : 'err'));
     } elseif ($act === 'update' && isset($_POST['old_kodemk']) && $_POST['old_kodemk'] !== '') {
         $old = mysqli_real_escape_string($link, $_POST['old_kodemk']);
-        mysqli_query($link, "UPDATE tbl_matakuliah SET kodemk='$kodemk', namamk='$namamk', sks='$sks' WHERE kodemk='$old'");
+        $ok  = mysqli_query($link, "UPDATE tbl_matakuliah SET kodemk='$kodemk', namamk='$namamk', sks='$sks' WHERE kodemk='$old'");
+        header('Location: index.php?hal=matakuliah&msg=' . ($ok ? 'updated' : 'err_upd'));
+    } else {
+        header('Location: index.php?hal=matakuliah');
     }
-
-    header('Location: index.php?hal=matakuliah');
     exit;
 }
 
 // --- DELETE via GET ---
 if (canEdit() && isset($_GET['delete'])) {
     $del = mysqli_real_escape_string($link, $_GET['delete']);
-    mysqli_query($link, "DELETE FROM tbl_matakuliah WHERE kodemk='$del'");
-    header('Location: index.php?hal=matakuliah');
+    $ok  = mysqli_query($link, "DELETE FROM tbl_matakuliah WHERE kodemk='$del'");
+    header('Location: index.php?hal=matakuliah&msg=' . ($ok ? 'deleted' : 'err_del'));
     exit;
 }
 

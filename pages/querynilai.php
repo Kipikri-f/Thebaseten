@@ -28,14 +28,15 @@ if (isset($_POST['simpan'])) {
     $nim   = mysqli_real_escape_string($link, $_POST['nim']);
     $cek   = mysqli_query($link, "SELECT * FROM tbl_nilai WHERE nim='$nim'");
     if (mysqli_num_rows($cek) > 0) {
-        $error = 'NIM ini sudah memiliki data nilai.';
+        header('Location: index.php?hal=querynilai&msg=duplicate');
+        exit;
     } else {
         $tugas = (float) $_POST['tugas'];
         $uts   = (float) $_POST['uts'];
         $uas   = (float) $_POST['uas'];
         [$akhir, $hm, $status] = hitungNilai($tugas, $uts, $uas);
-        mysqli_query($link, "INSERT INTO tbl_nilai VALUES('$nim','$tugas','$uts','$uas','$akhir','$hm','$status')");
-        header('Location: index.php?hal=querynilai&msg=added');
+        $ok = mysqli_query($link, "INSERT INTO tbl_nilai VALUES('$nim','$tugas','$uts','$uas','$akhir','$hm','$status')");
+        header('Location: index.php?hal=querynilai&msg=' . ($ok ? 'added' : 'err'));
         exit;
     }
 }
@@ -43,8 +44,8 @@ if (isset($_POST['simpan'])) {
 // --- HAPUS ---
 if (isset($_GET['hapus'])) {
     $nim = mysqli_real_escape_string($link, $_GET['hapus']);
-    mysqli_query($link, "DELETE FROM tbl_nilai WHERE nim='$nim'");
-    header('Location: index.php?hal=querynilai&msg=deleted');
+    $ok  = mysqli_query($link, "DELETE FROM tbl_nilai WHERE nim='$nim'");
+    header('Location: index.php?hal=querynilai&msg=' . ($ok ? 'deleted' : 'err_del'));
     exit;
 }
 
@@ -69,37 +70,24 @@ if (isset($_POST['update'])) {
     if ($nim !== $nim_lama) {
         $cek = mysqli_query($link, "SELECT * FROM tbl_nilai WHERE nim='$nim'");
         if (mysqli_num_rows($cek) > 0) {
-            $error = 'NIM sudah dipakai mahasiswa lain.';
+            header('Location: index.php?hal=querynilai&msg=duplicate');
+            exit;
         }
     }
 
-    if (!isset($error)) {
-        [$akhir, $hm, $status] = hitungNilai($tugas, $uts, $uas);
-        mysqli_query($link, "UPDATE tbl_nilai SET nim='$nim', tugas='$tugas', uts='$uts', uas='$uas',
-                             akhir='$akhir', hm='$hm', status='$status' WHERE nim='$nim_lama'");
-        header('Location: index.php?hal=querynilai&msg=updated');
-        exit;
-    }
+    [$akhir, $hm, $status] = hitungNilai($tugas, $uts, $uas);
+    $ok = mysqli_query($link, "UPDATE tbl_nilai SET nim='$nim', tugas='$tugas', uts='$uts', uas='$uas',
+                         akhir='$akhir', hm='$hm', status='$status' WHERE nim='$nim_lama'");
+    header('Location: index.php?hal=querynilai&msg=' . ($ok ? 'updated' : 'err_upd'));
+    exit;
 }
 
-$msg = $_GET['msg'] ?? '';
+$msg = '';
 ?>
 
 <div class="box">
     <h2>📊 Data Nilai Mahasiswa</h2>
     <p class="subjudul">Data nilai mahasiswa selama pembelajaran</p>
-
-    <?php if ($msg === 'added'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data nilai berhasil ditambahkan.</div>
-    <?php elseif ($msg === 'updated'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data nilai berhasil diperbarui.</div>
-    <?php elseif ($msg === 'deleted'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data nilai berhasil dihapus.</div>
-    <?php endif; ?>
-
-    <?php if (isset($error)): ?>
-        <div class="alert alert-error" style="margin-bottom:16px;">⚠️ <?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
 
     <h3><?= $edit ? 'Edit Data Nilai' : 'Input Nilai Mahasiswa' ?></h3>
 

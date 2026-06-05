@@ -14,10 +14,11 @@ if (canEdit() && isset($_POST['simpan'])) {
     $nid = mysqli_real_escape_string($link, $_POST['nid']);
     $cek = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim'");
     if (mysqli_num_rows($cek) > 0) {
-        $error = 'Mahasiswa ini sudah memiliki dosen pembimbing. Gunakan fitur Edit untuk mengubah data.';
+        header('Location: index.php?hal=dopem&msg=duplicate');
+        exit;
     } else {
-        mysqli_query($link, "INSERT INTO tbl_dopem (nim, nid) VALUES ('$nim', '$nid')");
-        header('Location: index.php?hal=dopem&msg=added');
+        $ok = mysqli_query($link, "INSERT INTO tbl_dopem (nim, nid) VALUES ('$nim', '$nid')");
+        header('Location: index.php?hal=dopem&msg=' . ($ok ? 'added' : 'err'));
         exit;
     }
 }
@@ -25,8 +26,8 @@ if (canEdit() && isset($_POST['simpan'])) {
 // --- HAPUS ---
 if (canEdit() && isset($_GET['hapus'])) {
     $nim = mysqli_real_escape_string($link, $_GET['hapus']);
-    mysqli_query($link, "DELETE FROM tbl_dopem WHERE nim='$nim'");
-    header('Location: index.php?hal=dopem&msg=deleted');
+    $ok  = mysqli_query($link, "DELETE FROM tbl_dopem WHERE nim='$nim'");
+    header('Location: index.php?hal=dopem&msg=' . ($ok ? 'deleted' : 'err_del'));
     exit;
 }
 
@@ -50,15 +51,16 @@ if (canEdit() && isset($_POST['update'])) {
     $nim_lama = mysqli_real_escape_string($link, $_POST['nim_lama']);
     $cek      = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim' AND nid='$nid' AND nim!='$nim_lama'");
     if (mysqli_num_rows($cek) > 0) {
-        $error = 'Data sudah ada untuk kombinasi mahasiswa dan dosen tersebut.';
+        header('Location: index.php?hal=dopem&msg=duplicate');
+        exit;
     } else {
-        mysqli_query($link, "UPDATE tbl_dopem SET nim='$nim', nid='$nid' WHERE nim='$nim_lama'");
-        header('Location: index.php?hal=dopem&msg=updated');
+        $ok = mysqli_query($link, "UPDATE tbl_dopem SET nim='$nim', nid='$nid' WHERE nim='$nim_lama'");
+        header('Location: index.php?hal=dopem&msg=' . ($ok ? 'updated' : 'err_upd'));
         exit;
     }
 }
 
-$msg = $_GET['msg'] ?? '';
+$msg = '';
 ?>
 
 <div class="box">
@@ -66,18 +68,6 @@ $msg = $_GET['msg'] ?? '';
     <p class="subjudul">
         <?= canEdit() ? 'Kelola relasi mahasiswa dengan dosen pembimbingnya' : 'Hubungi Admin untuk perubahan data jika belum terubah' ?>
     </p>
-
-    <?php if ($msg === 'added'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil ditambahkan.</div>
-    <?php elseif ($msg === 'updated'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil diperbarui.</div>
-    <?php elseif ($msg === 'deleted'): ?>
-        <div class="alert alert-success" style="margin-bottom:16px;">✅ Data berhasil dihapus.</div>
-    <?php endif; ?>
-
-    <?php if (isset($error)): ?>
-        <div class="alert alert-error" style="margin-bottom:16px;">⚠️ <?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
 
     <?php if (canEdit()): ?>
     <h3><?= $edit ? 'Edit Dosen Pembimbing' : 'Tambah Dosen Pembimbing' ?></h3>
