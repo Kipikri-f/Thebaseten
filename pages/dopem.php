@@ -12,9 +12,9 @@ $nim = $nid = $nim_lama = '';
 if (canEdit() && isset($_POST['simpan'])) {
     $nim = mysqli_real_escape_string($link, $_POST['nim']);
     $nid = mysqli_real_escape_string($link, $_POST['nid']);
-    $cek = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim' AND nid='$nid'");
+    $cek = mysqli_query($link, "SELECT * FROM tbl_dopem WHERE nim='$nim'");
     if (mysqli_num_rows($cek) > 0) {
-        $error = 'Data dosen pembimbing untuk mahasiswa ini sudah ada.';
+        $error = 'Mahasiswa ini sudah memiliki dosen pembimbing. Gunakan fitur Edit untuk mengubah data.';
     } else {
         mysqli_query($link, "INSERT INTO tbl_dopem (nim, nid) VALUES ('$nim', '$nid')");
         header('Location: index.php?hal=dopem&msg=added');

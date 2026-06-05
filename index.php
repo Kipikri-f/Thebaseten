@@ -3,6 +3,8 @@
 // INDEX — Main Application Shell
 // =====================================================
 
+ob_start(); // FIX: buffer semua output supaya header() di sub-pages bisa bekerja
+
 require_once 'includes/auth.php';
 require_once 'includes/helpers.php';
 
@@ -50,6 +52,9 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TheBaseTen &mdash; Sistem Basis Data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -62,7 +67,7 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
 
     <div class="topbar-brand">
         <div class="topbar-logo-wrap">
-            <img src="gambar/unida.png" alt="Logo UNIDA" class="topbar-logo">
+            <img src="gambar/unida.png" alt="Logo UNIDA" class="topbar-logo" style="border-radius:0;">
         </div>
         <div>
             <h1>Thebaseten</h1>
@@ -98,6 +103,11 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
                     <span class="avatar-dropdown-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
                     <span class="role-badge <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
                 </div>
+                <div class="avatar-dropdown-divider"></div>
+                <!-- Switch Account button -->
+                <button class="avatar-dropdown-switch" onclick="openSwitchAccount()">
+                    <span>🔄</span> Switch Account
+                </button>
                 <div class="avatar-dropdown-divider"></div>
                 <a href="logout.php" class="avatar-dropdown-logout" onclick="return confirm('Keluar dari aplikasi?')">
                     <span>🚪</span> Sign out
@@ -135,6 +145,15 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
             </button>
             <span class="sidebar-dashboard-label" id="sidebarDashboardLabel">Dashboard</span>
         </div>
+        <div class="sidebar-brand-section" id="sidebarBrandSection">
+            <div class="sidebar-brand-logo">
+                <img src="gambar/unida.png" alt="UNIDA" class="sidebar-brand-img">
+            </div>
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">TheBaseTen</span>
+                <span class="sidebar-brand-sub">Univ. Djuanda</span>
+            </div>
+        </div>
         <nav>
             <?php foreach ($nav_items as $key => $item):
                 // Hide non-home pages for guest
@@ -150,14 +169,48 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
         </nav>
 
         <?php if (!isGuest()): ?>
-        <div class="sidebar-profile">
-            <div class="sidebar-profile-avatar">
-                <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
+        <div class="sidebar-profile" id="sidebarProfile">
+            <!-- Popup menu (opens upward) -->
+            <div class="sidebar-profile-menu" id="sidebarProfileMenu">
+                <div class="sidebar-menu-header">
+                    <span class="sidebar-menu-email"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
+                </div>
+                <button class="sidebar-menu-item switch" onclick="openSwitchAccount(); closeSidebarProfileMenu()">
+                    <span class="sidebar-menu-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
+                            <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
+                        </svg>
+                    </span>
+                    Switch Account
+                </button>
+                <div class="sidebar-menu-divider"></div>
+                <a href="logout.php" class="sidebar-menu-item logout" onclick="return confirm('Keluar dari aplikasi?')">
+                    <span class="sidebar-menu-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </span>
+                    Sign out
+                </a>
             </div>
-            <div class="sidebar-profile-info">
-                <span class="sidebar-profile-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
-                <span class="sidebar-profile-role <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
-            </div>
+            <!-- Clickable profile row -->
+            <button class="sidebar-profile-btn" id="sidebarProfileBtn" onclick="toggleSidebarProfileMenu()" type="button">
+                <div class="sidebar-profile-avatar">
+                    <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
+                </div>
+                <div class="sidebar-profile-info">
+                    <span class="sidebar-profile-name"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
+                    <span class="sidebar-profile-role <?= $badge['class'] ?>"><?= $badge['label'] ?></span>
+                </div>
+                <span class="sidebar-profile-chevron">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <polyline points="18 15 12 9 6 15"/>
+                    </svg>
+                </span>
+            </button>
         </div>
         <?php endif; ?>
     </aside>
@@ -174,7 +227,103 @@ $badge = $roleBadge[$role] ?? $roleBadge['guest'];
     TheBaseTen &copy; 2026 &mdash; Kelompok 10 &middot; Universitas Djuanda
 </footer>
 
+<!-- ===== SCROLL TO TOP ===== -->
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()" title="Back to top">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+    </svg>
+    <span class="scroll-top-logo"></span>
+</button>
+
+
+<!-- ===== SWITCH ACCOUNT MODAL OVERLAY ===== -->
+<div class="switch-account-overlay" id="switchAccountOverlay" onclick="closeSwitchAccountOnBg(event)">
+    <div class="switch-account-modal" id="switchAccountModal">
+
+        <div class="switch-login-header">
+            <div class="switch-login-logo-wrap">
+                <img src="gambar/unida.png" alt="Logo UNIDA" class="login-logo">
+            </div>
+            <h1>Thebase<span>TEN</span></h1>
+            <p>Universitas Djuanda &mdash; Kelompok 10</p>
+        </div>
+
+        <div class="role-tabs">
+            <button class="role-tab active" onclick="switchTab('admin')" id="sw-tab-admin">
+                <span>🛡️</span> Admin
+            </button>
+            <button class="role-tab" onclick="switchTab('member')" id="sw-tab-member">
+                <span>👤</span> Member
+            </button>
+        </div>
+
+        <div id="switch-error-box" style="display:none;" class="alert alert-error switch-alert">
+            <span>&#9888;</span> <span id="switch-error-msg">Username atau password salah.</span>
+        </div>
+
+        <form class="login-form switch-login-form" id="switchAccountForm" onsubmit="doSwitchAccount(event)">
+            <div class="form-group">
+                <label for="sw-username">Username</label>
+                <div class="input-icon-wrap">
+                    <span class="input-icon">&#128100;</span>
+                    <input type="text" id="sw-username" name="username"
+                           placeholder="Masukkan username" required autocomplete="username">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="sw-password">Password</label>
+                <div class="input-icon-wrap">
+                    <span class="input-icon">&#128274;</span>
+                    <input type="password" id="sw-password" name="password"
+                           placeholder="Masukkan password" required autocomplete="current-password">
+                    <button type="button" class="toggle-pw" onclick="toggleSwPw()" title="Tampilkan password">
+                        &#128065;
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn-login">
+                <span>🔓</span> Switch Account
+            </button>
+        </form>
+
+        <div class="login-divider"><span>atau</span></div>
+
+        <div class="guest-section" style="padding-bottom:20px;">
+            <button type="button" class="btn-guest" onclick="closeSwitchAccount()">
+                <span>✖</span> Batal / Tetap di akun ini
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
 <script>
+// ── Sidebar Profile Menu ───────────────────────────────────────────────────
+function toggleSidebarProfileMenu() {
+    const menu    = document.getElementById('sidebarProfileMenu');
+    const profile = document.getElementById('sidebarProfile');
+    if (!menu) return;
+    const isOpen = menu.classList.contains('show');
+    menu.classList.toggle('show', !isOpen);
+    profile.classList.toggle('open', !isOpen);
+}
+
+function closeSidebarProfileMenu() {
+    const menu    = document.getElementById('sidebarProfileMenu');
+    const profile = document.getElementById('sidebarProfile');
+    if (menu) menu.classList.remove('show');
+    if (profile) profile.classList.remove('open');
+}
+
+// Close sidebar profile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const profile = document.getElementById('sidebarProfile');
+    if (profile && !profile.contains(e.target)) {
+        closeSidebarProfileMenu();
+    }
+});
+
 // ── Mobile overlay toggle ──────────────────────────────────────────────────
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -272,6 +421,104 @@ document.querySelectorAll('.nav-link').forEach(function(link) {
             document.getElementById('sidebarOverlay').classList.remove('show');
         }
     });
+});
+
+// ── Switch Account Modal ───────────────────────────────────────────────────
+function openSwitchAccount() {
+    // Close avatar dropdown first
+    document.getElementById('avatarDropdown').classList.remove('show');
+    document.getElementById('switchAccountOverlay').classList.add('show');
+    document.getElementById('switch-error-box').style.display = 'none';
+    document.getElementById('switchAccountForm').reset();
+    setTimeout(function() {
+        document.getElementById('sw-username').focus();
+    }, 120);
+}
+
+function closeSwitchAccount() {
+    document.getElementById('switchAccountOverlay').classList.remove('show');
+}
+
+function closeSwitchAccountOnBg(e) {
+    if (e.target === document.getElementById('switchAccountOverlay')) {
+        closeSwitchAccount();
+    }
+}
+
+function toggleSwPw() {
+    var pw = document.getElementById('sw-password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+}
+
+// Tab switch inside modal
+function switchTab(role) {
+    ['admin','member'].forEach(function(r) {
+        document.getElementById('sw-tab-' + r).classList.toggle('active', r === role);
+    });
+}
+
+// Submit switch account via fetch (POST to switch_account.php)
+function doSwitchAccount(e) {
+    e.preventDefault();
+    var username = document.getElementById('sw-username').value.trim();
+    var password = document.getElementById('sw-password').value;
+
+    // Valid users (same as login.php)
+    var validUsers = {
+        'admin':     { password: 'admin123',   role: 'admin'  },
+        'memberten': { password: 'baseten123', role: 'member' }
+    };
+
+    var errBox = document.getElementById('switch-error-box');
+    var errMsg = document.getElementById('switch-error-msg');
+
+    if (validUsers[username] && validUsers[username].password === password) {
+        // Redirect to switch_account.php with credentials via hidden form POST
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'switch_account.php';
+        ['username','password'].forEach(function(field) {
+            var inp = document.createElement('input');
+            inp.type  = 'hidden';
+            inp.name  = field;
+            inp.value = field === 'username' ? username : password;
+            form.appendChild(inp);
+        });
+        // Pass current page to redirect back after switch
+        var pageInp = document.createElement('input');
+        pageInp.type  = 'hidden';
+        pageInp.name  = 'redirect_hal';
+        pageInp.value = '<?= htmlspecialchars($hal) ?>';
+        form.appendChild(pageInp);
+        document.body.appendChild(form);
+        form.submit();
+    } else {
+        errBox.style.display = 'flex';
+        errMsg.textContent = 'Username atau password salah.';
+        document.getElementById('sw-password').value = '';
+        document.getElementById('sw-password').focus();
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSwitchAccount();
+});
+
+// Scroll to top button
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const scrollTopBtn = document.getElementById('scrollTopBtn');
+const mainContent  = document.querySelector('.main-content');
+if (mainContent) {
+    mainContent.addEventListener('scroll', function() {
+        scrollTopBtn.classList.toggle('visible', mainContent.scrollTop > 200);
+    });
+}
+window.addEventListener('scroll', function() {
+    scrollTopBtn.classList.toggle('visible', window.scrollY > 200);
 });
 </script>
 
