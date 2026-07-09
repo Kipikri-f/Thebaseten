@@ -1,308 +1,348 @@
 <?php
 // =====================================================
-// PAGE: Rekap (Ringkasan / Aggregate Report)
+// PAGE: Rekap & Statistik
+// Menampilkan ringkasan data akademik menggunakan
+// fungsi agregat SQL: COUNT, SUM, DISTINCT, GROUP BY
+// Tabel yang dipakai: tbl_mhs, tbl_nilai, tbl_dosen,
+// tbl_dopem, tbl_matakuliah, tbl_anggota
 // =====================================================
-// Halaman ini murni menampilkan hasil query rekap —
-// tidak ada CRUD di sini. Semua data diambil dari
-// tbl_fakultas (data per-mahasiswa: fakultas, prodi,
-// angkatan, status kelulusan) dan tbl_mahasiswa_ipk
-// (IPK per mahasiswa), sesuai skema database
-// `learnclidatabase` yang sebenarnya dipakai.
-//
-// Catatan: tbl_fakultas di database ini BUKAN tabel
-// referensi kode->nama, melainkan tabel data mahasiswa
-// per-baris (nom, nim, nama, kdfakultas, prodi, angkatan,
-// sts, tahun). Karena tidak ada tabel referensi terpisah
-// untuk nama fakultas, nama fakultas dipetakan di PHP.
 
 require_once __DIR__ . '/../includes/koneksi.php';
 
-// Peta kode fakultas -> nama fakultas (tidak ada tabel referensi di DB)
-$namaFakultasMap = [
-    'FAK1' => 'Fakultas Ekonomi dan Bisnis',
-    'FAK2' => 'Fakultas Ilmu Komputer',
-    'FAK3' => 'Fakultas Keguruan dan Ilmu Pendidikan',
-    'FAK4' => 'Fakultas Agama Islam',
-    'FAK5' => 'Fakultas Teknik dan Ilmu Pertanian',
+// ── 1. Ringkasan umum nilai (COUNT, SUM) ─────────────────────────────────
+$sqlRingkasNilai = "SELECT
+        COUNT(*)      AS total_dinilai,
+        COUNT(DISTINCT hm) AS variasi_huruf_mutu
+    FROM tbl_nilai";
+$ringkasNilai = mysqli_fetch_assoc(mysqli_query($link, $sqlRingkasNilai));
+
+$total_mhs = 0;
+$r = mysqli_query($link, "SELECT COUNT(*) AS total FROM tbl_mhs");
+if ($r) $total_mhs = (int) mysqli_fetch_assoc($r)['total'];
+
+// ── 2. Distribusi Huruf Mutu (GROUP BY + COUNT) ──────────────────────────
+$sqlHurufMutu = "SELECT hm, COUNT(*) AS jumlah
+    FROM tbl_nilai
+    GROUP BY hm
+    ORDER BY hm ASC";
+$rHurufMutu = mysqli_query($link, $sqlHurufMutu);
+
+// ── 3. Distribusi Status Kelulusan (GROUP BY + COUNT) ────────────────────
+$sqlStatus = "SELECT status, COUNT(*) AS jumlah
+    FROM tbl_nilai
+    GROUP BY status
+    ORDER BY jumlah DESC";
+$rStatus = mysqli_query($link, $sqlStatus);
+
+// ── 4. Beban Bimbingan tiap Dosen (JOIN + GROUP BY + COUNT) ──────────────
+$sqlBimbingan = "SELECT d.nid, d.namadosen, COUNT(dp.nim) AS jumlah_bimbingan
+    FROM tbl_dopem dp
+    INNER JOIN tbl_dosen d ON dp.nid = d.nid
+    GROUP BY d.nid, d.namadosen
+    ORDER BY jumlah_bimbingan DESC";
+$rBimbingan = mysqli_query($link, $sqlBimbingan);
+
+// ── 5. Rekap Mata Kuliah per SKS (GROUP BY + COUNT + SUM) ────────────────
+$sqlSks = "SELECT sks, COUNT(*) AS jumlah_mk, SUM(sks) AS total_sks
+    FROM tbl_matakuliah
+    GROUP BY sks
+    ORDER BY sks ASC";
+$rSks = mysqli_query($link, $sqlSks);
+
+$totalSksKurikulum = 0;
+$rTotalSks = mysqli_query($link, "SELECT SUM(sks) AS total FROM tbl_matakuliah");
+if ($rTotalSks) $totalSksKurikulum = (int) (mysqli_fetch_assoc($rTotalSks)['total'] ?? 0);
+
+// ── 6. Data Mahasiswa & Dosen Pembimbing (JOIN) ──────────────────────────
+$sqlMhsDopem = "SELECT m.nim, m.namamhs, d.namadosen
+    FROM tbl_mhs m
+    LEFT JOIN tbl_dopem dp ON dp.nim = m.nim
+    LEFT JOIN tbl_dosen d  ON d.nid  = dp.nid
+    ORDER BY m.nim ASC";
+$rMhsDopem = mysqli_query($link, $sqlMhsDopem);
+
+// ── 7. Daftar IPK Mahasiswa (dikonversi dari huruf mutu tbl_nilai) ───────
+$sqlIpk = "SELECT m.nim, m.namamhs,
+        CASE n.hm
+            WHEN 'A' THEN 4.00
+            WHEN 'B' THEN 3.00
+            WHEN 'C' THEN 2.00
+            WHEN 'D' THEN 1.00
+            WHEN 'E' THEN 0.00
+            ELSE NULL
+        END AS ipk
+    FROM tbl_mhs m
+    LEFT JOIN tbl_nilai n ON n.nim = m.nim
+    ORDER BY m.nim ASC";
+$rIpk = mysqli_query($link, $sqlIpk);
+
+$badgeHm = [
+    'A' => 'badge-lulus-sm',
+    'B' => 'badge-lulus-m',
+    'C' => 'badge-lulus',
 ];
-function namaFakultas(array $map, ?string $kode): string {
-    if (!$kode) return '-';
-    return $map[$kode] ?? $kode;
-}
-
-// ---------------------------------------------------------
-// 1) Jumlah mahasiswa per fakultas
-// ---------------------------------------------------------
-$rekapFakultas = [];
-$q1 = mysqli_query($link, "
-    SELECT kdfakultas, COUNT(*) AS jumlah
-    FROM tbl_fakultas
-    WHERE kdfakultas IS NOT NULL AND kdfakultas <> ''
-    GROUP BY kdfakultas
-    ORDER BY kdfakultas
-");
-if ($q1) { while ($r = mysqli_fetch_assoc($q1)) { $rekapFakultas[] = $r; } }
-
-$avgFakultas = 0;
-if (count($rekapFakultas) > 0) {
-    $avgFakultas = array_sum(array_column($rekapFakultas, 'jumlah')) / count($rekapFakultas);
-}
-$rekapFakultasTop = array_values(array_filter($rekapFakultas, function ($r) use ($avgFakultas) {
-    return $r['jumlah'] > $avgFakultas;
-}));
-
-// ---------------------------------------------------------
-// 2) Jumlah mahasiswa per prodi
-// ---------------------------------------------------------
-$rekapProdi = [];
-$q2 = mysqli_query($link, "
-    SELECT prodi, COUNT(*) AS jumlah
-    FROM tbl_fakultas
-    WHERE prodi IS NOT NULL AND prodi <> ''
-    GROUP BY prodi
-    ORDER BY prodi
-");
-if ($q2) { while ($r = mysqli_fetch_assoc($q2)) { $rekapProdi[] = $r; } }
-
-$avgProdi = 0;
-if (count($rekapProdi) > 0) {
-    $avgProdi = array_sum(array_column($rekapProdi, 'jumlah')) / count($rekapProdi);
-}
-$rekapProdiTop = array_values(array_filter($rekapProdi, function ($r) use ($avgProdi) {
-    return $r['jumlah'] > $avgProdi;
-}));
-
-// ---------------------------------------------------------
-// 3) Jumlah mahasiswa LULUS per fakultas
-//    (lulus = tbl_fakultas.sts = 'LULUS')
-// ---------------------------------------------------------
-$rekapLulus = [];
-$q3 = mysqli_query($link, "
-    SELECT kdfakultas, COUNT(*) AS jumlah_lulus
-    FROM tbl_fakultas
-    WHERE sts = 'LULUS'
-    GROUP BY kdfakultas
-    ORDER BY kdfakultas
-");
-if ($q3) { while ($r = mysqli_fetch_assoc($q3)) { $rekapLulus[] = $r; } }
-
-$avgLulus = 0;
-if (count($rekapLulus) > 0) {
-    $avgLulus = array_sum(array_column($rekapLulus, 'jumlah_lulus')) / count($rekapLulus);
-}
-$rekapLulusTop = array_values(array_filter($rekapLulus, function ($r) use ($avgLulus) {
-    return $r['jumlah_lulus'] > $avgLulus;
-}));
-
-// ---------------------------------------------------------
-// 4) Detail data mahasiswa (bisa difilter per angkatan)
-// ---------------------------------------------------------
-$listAngkatan = [];
-$qa = mysqli_query($link, "SELECT DISTINCT angkatan FROM tbl_fakultas WHERE angkatan IS NOT NULL AND angkatan <> '' ORDER BY angkatan DESC");
-if ($qa) { while ($r = mysqli_fetch_assoc($qa)) { $listAngkatan[] = $r['angkatan']; } }
-
-$filterAngkatan = isset($_GET['angkatan']) && $_GET['angkatan'] !== '' ? trim($_GET['angkatan']) : null;
-
-$whereAngkatan = '';
-if ($filterAngkatan !== null) {
-    $whereAngkatan = "WHERE angkatan = '" . mysqli_real_escape_string($link, $filterAngkatan) . "'";
-}
-
-$detailMhs = [];
-$q4 = mysqli_query($link, "
-    SELECT nim, nama, kdfakultas, prodi, angkatan,
-           COALESCE(NULLIF(sts, ''), '-') AS status,
-           CASE WHEN sts = 'LULUS' THEN 'Lulus' ELSE '-' END AS lulus
-    FROM tbl_fakultas
-    $whereAngkatan
-    ORDER BY nim ASC
-");
-if ($q4) { while ($r = mysqli_fetch_assoc($q4)) { $detailMhs[] = $r; } }
-
-// ---------------------------------------------------------
-// 5) Top mahasiswa berdasarkan IPK tertinggi
-// ---------------------------------------------------------
-$topIpk = [];
-$q5 = mysqli_query($link, "
-    SELECT f.nim, f.nama, i.ipk
-    FROM tbl_mahasiswa_ipk i
-    INNER JOIN tbl_fakultas f ON f.nim = i.nim
-    ORDER BY i.ipk DESC, f.nama ASC
-    LIMIT 10
-");
-if ($q5) { while ($r = mysqli_fetch_assoc($q5)) { $topIpk[] = $r; } }
 ?>
 
 <div class="box">
-    <h2>🧾 Rekap Data Akademik</h2>
-    <p class="subjudul">Ringkasan agregat mahasiswa berdasarkan fakultas, prodi, status kelulusan, dan IPK</p>
+    <h2>📈 Rekap &amp; Statistik</h2>
+    <p class="subjudul">Ringkasan data akademik secara keseluruhan</p>
 
-    <!-- ============ 1. REKAP PER FAKULTAS ============ -->
-    <h3>1. Jumlah Mahasiswa per Fakultas</h3>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Fakultas</th><th>Nama Fakultas</th><th>Jumlah</th></tr></thead>
-            <tbody>
-            <?php if ($rekapFakultas): foreach ($rekapFakultas as $r): ?>
-                <tr>
-                    <td><span class="badge badge-nim"><?= htmlspecialchars($r['kdfakultas']) ?></span></td>
-                    <td><?= htmlspecialchars(namaFakultas($namaFakultasMap, $r['kdfakultas'])) ?></td>
-                    <td><strong><?= (int) $r['jumlah'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="3" class="no-data">Belum ada data fakultas.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <p class="subjudul" style="margin-top:18px;">Fakultas dengan jumlah mahasiswa di atas rata-rata (&gt; <?= number_format($avgFakultas, 1) ?>)</p>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Fakultas</th><th>Jumlah</th></tr></thead>
-            <tbody>
-            <?php if ($rekapFakultasTop): foreach ($rekapFakultasTop as $r): ?>
-                <tr>
-                    <td><span class="badge badge-nim"><?= htmlspecialchars($r['kdfakultas']) ?></span></td>
-                    <td><strong><?= (int) $r['jumlah'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="2" class="no-data">Tidak ada fakultas di atas rata-rata.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ============ 2. REKAP PER PRODI ============ -->
-    <h3 style="margin-top:32px;">2. Jumlah Mahasiswa per Program Studi</h3>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Prodi</th><th>Jumlah</th></tr></thead>
-            <tbody>
-            <?php if ($rekapProdi): foreach ($rekapProdi as $r): ?>
-                <tr>
-                    <td><span class="badge badge-sks"><?= htmlspecialchars($r['prodi']) ?></span></td>
-                    <td><strong><?= (int) $r['jumlah'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="2" class="no-data">Belum ada data prodi.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <p class="subjudul" style="margin-top:18px;">Prodi dengan jumlah mahasiswa di atas rata-rata (&gt; <?= number_format($avgProdi, 1) ?>)</p>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Prodi</th><th>Jumlah</th></tr></thead>
-            <tbody>
-            <?php if ($rekapProdiTop): foreach ($rekapProdiTop as $r): ?>
-                <tr>
-                    <td><span class="badge badge-sks"><?= htmlspecialchars($r['prodi']) ?></span></td>
-                    <td><strong><?= (int) $r['jumlah'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="2" class="no-data">Tidak ada prodi di atas rata-rata.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ============ 3. REKAP LULUS PER FAKULTAS ============ -->
-    <h3 style="margin-top:32px;">3. Jumlah Mahasiswa Lulus per Fakultas</h3>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Fakultas</th><th>Nama Fakultas</th><th>Jumlah Lulus</th></tr></thead>
-            <tbody>
-            <?php if ($rekapLulus): foreach ($rekapLulus as $r): ?>
-                <tr>
-                    <td><span class="badge badge-nim"><?= htmlspecialchars($r['kdfakultas']) ?></span></td>
-                    <td><?= htmlspecialchars(namaFakultas($namaFakultasMap, $r['kdfakultas'])) ?></td>
-                    <td><strong><?= (int) $r['jumlah_lulus'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="3" class="no-data">Belum ada data kelulusan.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <p class="subjudul" style="margin-top:18px;">Fakultas dengan kelulusan di atas rata-rata (&gt; <?= number_format($avgLulus, 1) ?>)</p>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>Fakultas</th><th>Jumlah Lulus</th></tr></thead>
-            <tbody>
-            <?php if ($rekapLulusTop): foreach ($rekapLulusTop as $r): ?>
-                <tr>
-                    <td><span class="badge badge-nim"><?= htmlspecialchars($r['kdfakultas']) ?></span></td>
-                    <td><strong><?= (int) $r['jumlah_lulus'] ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="2" class="no-data">Tidak ada fakultas di atas rata-rata.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ============ 4. DETAIL DATA MAHASISWA ============ -->
-    <h3 style="margin-top:32px;">4. Detail Data Mahasiswa</h3>
-    <form method="GET" action="index.php" class="form-row" style="align-items:flex-end;margin-bottom:14px;">
-        <input type="hidden" name="hal" value="rekap">
-        <div class="form-group" style="max-width:220px;">
-            <label>Filter Angkatan</label>
-            <select name="angkatan" onchange="this.form.submit()">
-                <option value="">-- Semua Angkatan --</option>
-                <?php foreach ($listAngkatan as $ang): ?>
-                    <option value="<?= htmlspecialchars($ang) ?>" <?= ($filterAngkatan === (string) $ang) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($ang) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    <!-- Stat Cards -->
+    <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+            <div class="stat-icon">🎓</div>
+            <div class="stat-value"><?= number_format($total_mhs, 0, ',', '.') ?></div>
+            <div class="stat-label">Total Mahasiswa</div>
         </div>
-    </form>
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value"><?= (int) ($ringkasNilai['total_dinilai'] ?? 0) ?></div>
+            <div class="stat-label">Mahasiswa Dinilai</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔠</div>
+            <div class="stat-value"><?= (int) ($ringkasNilai['variasi_huruf_mutu'] ?? 0) ?></div>
+            <div class="stat-label">Variasi Huruf Mutu</div>
+        </div>
+    </div>
+</div>
+
+<div class="rekap-grid">
+
+<!-- ===== Rekap 1: Distribusi Huruf Mutu ===== -->
+<div class="box">
+    <h3>🔠 Distribusi Huruf Mutu</h3>
+    <p class="subjudul" style="margin-top:-10px;">Jumlah mahasiswa berdasarkan huruf mutu</p>
+
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>No</th><th>NIM</th><th>Nama</th><th>Fakultas</th>
-                    <th>Prodi</th><th>Angkatan</th><th>Status</th><th>Lulus</th>
+                    <th>Huruf Mutu</th>
+                    <th>Jumlah Mahasiswa</th>
                 </tr>
             </thead>
             <tbody>
-            <?php if ($detailMhs): $no = 1; foreach ($detailMhs as $r): ?>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rHurufMutu)): $ada = true;
+                $bc = $badgeHm[$row['hm']] ?? 'badge-tidak';
+            ?>
                 <tr>
-                    <td><?= $no++ ?></td>
-                    <td><?= htmlspecialchars($r['nim']) ?></td>
-                    <td><?= htmlspecialchars($r['nama']) ?></td>
-                    <td><?= htmlspecialchars($r['kdfakultas'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($r['prodi'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($r['angkatan'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($r['status']) ?></td>
-                    <td><?= htmlspecialchars($r['lulus']) ?></td>
+                    <td><span class="badge <?= $bc ?>"><?= htmlspecialchars($row['hm']) ?></span></td>
+                    <td><strong><?= (int) $row['jumlah'] ?></strong></td>
                 </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="8" class="no-data">Belum ada data mahasiswa.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ============ 5. TOP MAHASISWA BERDASARKAN IPK ============ -->
-    <h3 style="margin-top:32px;">5. Top 10 Mahasiswa Berdasarkan IPK</h3>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr><th>NIM</th><th>Nama</th><th>IPK</th></tr></thead>
-            <tbody>
-            <?php if ($topIpk): foreach ($topIpk as $r): ?>
-                <tr>
-                    <td><span class="badge badge-nim"><?= htmlspecialchars($r['nim']) ?></span></td>
-                    <td><?= htmlspecialchars($r['nama']) ?></td>
-                    <td><strong><?= number_format((float) $r['ipk'], 2) ?></strong></td>
-                </tr>
-            <?php endforeach; else: ?>
-                <tr><td colspan="3" class="no-data">Belum ada data IPK untuk ditampilkan.</td></tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="2" class="no-data">Belum ada data nilai.</td></tr>
             <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- ===== Rekap 2: Distribusi Status Kelulusan ===== -->
+<div class="box">
+    <h3>🏁 Distribusi Status Kelulusan</h3>
+    <p class="subjudul" style="margin-top:-10px;">Jumlah mahasiswa berdasarkan status akhir</p>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="text-align:left;padding-left:24px;">Status</th>
+                    <th>Jumlah</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rStatus)): $ada = true; ?>
+                <tr>
+                    <td style="text-align:left;padding-left:24px;"><?= htmlspecialchars($row['status']) ?></td>
+                    <td><strong><?= (int) $row['jumlah'] ?></strong></td>
+                </tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="2" class="no-data">Belum ada data nilai.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== Rekap 3: Beban Bimbingan Dosen ===== -->
+<div class="box">
+    <h3>👨‍🏫 Beban Bimbingan Dosen</h3>
+    <p class="subjudul" style="margin-top:-10px;">Jumlah mahasiswa bimbingan tiap dosen</p>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:18%">NID</th>
+                    <th style="text-align:left;padding-left:24px;">Nama Dosen</th>
+                    <th>Jumlah Bimbingan</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rBimbingan)): $ada = true; ?>
+                <tr>
+                    <td><span class="badge badge-nim"><?= htmlspecialchars($row['nid']) ?></span></td>
+                    <td style="text-align:left;padding-left:24px;"><?= htmlspecialchars($row['namadosen']) ?></td>
+                    <td><strong><?= (int) $row['jumlah_bimbingan'] ?></strong> mahasiswa</td>
+                </tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="3" class="no-data">Belum ada data bimbingan.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== Rekap 4: Mata Kuliah per SKS ===== -->
+<div class="box">
+    <h3>📚 Rekap Mata Kuliah per SKS</h3>
+    <p class="subjudul" style="margin-top:-10px;">Jumlah &amp; total SKS per kelompok bobot</p>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>SKS</th>
+                    <th>Jumlah Mata Kuliah</th>
+                    <th>Total SKS</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rSks)): $ada = true; ?>
+                <tr>
+                    <td><span class="badge badge-sks"><?= (int) $row['sks'] ?> SKS</span></td>
+                    <td><?= (int) $row['jumlah_mk'] ?></td>
+                    <td><strong><?= (int) $row['total_sks'] ?></strong></td>
+                </tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="3" class="no-data">Belum ada data mata kuliah.</td></tr>
+            <?php endif; ?>
+            </tbody>
+            <?php if ($ada): ?>
+            <tfoot>
+                <tr>
+                    <td style="text-align:right;font-weight:700;" colspan="2">Total SKS Kurikulum</td>
+                    <td><strong><?= $totalSksKurikulum ?></strong></td>
+                </tr>
+            </tfoot>
+            <?php endif; ?>
+        </table>
+    </div>
+</div>
+
+<!-- ===== Rekap 5: Mahasiswa & Dosen Pembimbing ===== -->
+<div class="box">
+    <h3>👥 Mahasiswa &amp; Dosen Pembimbing <span class="tbl-inline-note">(diurutkan)</span></h3>
+    <p class="subjudul" style="margin-top:-10px;">Pasangan mahasiswa dengan dosen pembimbingnya</p>
+
+    <div class="table-wrapper-scroll">
+        <table class="data-table" id="tabelMhsDopem">
+            <thead>
+                <tr>
+                    <th data-sort="number">NIM <span class="sort-arrow"></span></th>
+                    <th data-sort="text" style="text-align:left;padding-left:24px;">Nama Mahasiswa <span class="sort-arrow"></span></th>
+                    <th data-sort="text">Dosen Pembimbing <span class="sort-arrow"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rMhsDopem)): $ada = true; ?>
+                <tr>
+                    <td><span class="badge badge-nim"><?= htmlspecialchars($row['nim']) ?></span></td>
+                    <td style="text-align:left;padding-left:24px;"><?= htmlspecialchars($row['namamhs']) ?></td>
+                    <td><?= $row['namadosen'] ? htmlspecialchars($row['namadosen']) : '<span class="no-data" style="padding:0;">Belum ada</span>' ?></td>
+                </tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="3" class="no-data">Belum ada data mahasiswa.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== Rekap 6: Daftar IPK Mahasiswa ===== -->
+<div class="box">
+    <h3>🏆 Daftar IPK Mahasiswa <span class="tbl-inline-note">(diurutkan)</span></h3>
+    <p class="subjudul" style="margin-top:-10px;">IPK dikonversi dari huruf mutu nilai mahasiswa</p>
+
+    <div class="table-wrapper-scroll">
+        <table class="data-table" id="tabelIpk">
+            <thead>
+                <tr>
+                    <th data-sort="number">NIM <span class="sort-arrow"></span></th>
+                    <th data-sort="text" style="text-align:left;padding-left:24px;">Nama <span class="sort-arrow"></span></th>
+                    <th data-sort="number">IPK <span class="sort-arrow"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $ada = false; while ($row = mysqli_fetch_assoc($rIpk)): $ada = true; ?>
+                <tr>
+                    <td><span class="badge badge-nim"><?= htmlspecialchars($row['nim']) ?></span></td>
+                    <td style="text-align:left;padding-left:24px;"><?= htmlspecialchars($row['namamhs']) ?></td>
+                    <td><strong><?= $row['ipk'] !== null ? number_format((float) $row['ipk'], 2) : '-' ?></strong></td>
+                </tr>
+            <?php endwhile; ?>
+            <?php if (!$ada): ?>
+                <tr><td colspan="3" class="no-data">Belum ada data nilai.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+<!-- /rekap-grid -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function makeSortable(tableId) {
+        var table = document.getElementById(tableId);
+        if (!table) return;
+        var thead = table.querySelector('thead');
+        var tbody = table.querySelector('tbody');
+        var headers = thead.querySelectorAll('th[data-sort]');
+
+        headers.forEach(function (th, idx) {
+            th.classList.add('sortable-th');
+            th.addEventListener('click', function () {
+                var type = th.dataset.sort;
+                var dir  = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+
+                headers.forEach(function (t) {
+                    t.dataset.dir = '';
+                    var arrow = t.querySelector('.sort-arrow');
+                    if (arrow) arrow.textContent = '';
+                });
+                th.dataset.dir = dir;
+                var arrow = th.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = dir === 'asc' ? '▲' : '▼';
+
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                if (rows.length === 1 && rows[0].querySelector('.no-data')) return;
+
+                rows.sort(function (a, b) {
+                    var cellA = a.children[idx] ? a.children[idx].textContent.trim() : '';
+                    var cellB = b.children[idx] ? b.children[idx].textContent.trim() : '';
+                    var cmp;
+                    if (type === 'number') {
+                        cmp = (parseFloat(cellA) || 0) - (parseFloat(cellB) || 0);
+                    } else {
+                        cmp = cellA.localeCompare(cellB, 'id', { sensitivity: 'base' });
+                    }
+                    return dir === 'asc' ? cmp : -cmp;
+                });
+
+                rows.forEach(function (r) { tbody.appendChild(r); });
+            });
+        });
+    }
+
+    makeSortable('tabelMhsDopem');
+    makeSortable('tabelIpk');
+});
+</script>

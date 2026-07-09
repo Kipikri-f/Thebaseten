@@ -1398,6 +1398,53 @@ td.no-data, p.no-data {
 
 .data-panel-table thead th { position: sticky; top: 0; z-index: 1; }
 
+/* Rekap page: 2-column grid */
+.rekap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.rekap-grid .box { margin-bottom: 0; }
+
+@media (max-width: 900px) { .rekap-grid { grid-template-columns: 1fr; } }
+
+.sortable-th {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+.sortable-th:hover { background: var(--em-700); }
+.sort-arrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    margin-left: 3px;
+}
+
+.tbl-inline-note {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--slate-500);
+    margin-left: 2px;
+}
+
+.table-wrapper-scroll {
+    overflow: auto;
+    max-height: 320px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: var(--shadow-sm);
+    max-width: 100%;
+}
+.table-wrapper-scroll table.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.table-wrapper-scroll::-webkit-scrollbar { width: 7px; height: 7px; }
+.table-wrapper-scroll::-webkit-scrollbar-track { background: transparent; }
+.table-wrapper-scroll::-webkit-scrollbar-thumb { background: #9ad8b8; border-radius: 4px; }
+
 .badge-nim {
     background: #e5f0fa;
     color: #1a4878;

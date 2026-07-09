@@ -18,12 +18,8 @@ Thebaseten/
 │   ├── dosen.php           # CRUD Data Dosen
 │   ├── matakuliah.php      # CRUD Data Mata Kuliah
 │   ├── querynilai.php      # CRUD + Kalkulasi Nilai Mahasiswa
-│   ├── rekap.php           # Rekap agregat (fakultas, prodi, kelulusan, IPK)
 │   ├── dopem.php           # CRUD Dosen Pembimbing
 │   └── anggota.php         # CRUD Anggota Kelompok
-│
-├── sql/
-│   └── migration_rekap.sql # Migrasi tabel Fakultas/Prodi + kolom tbl_mhs
 │
 ├── includes/               # Helper & konfigurasi
 │   ├── koneksi.php         # Koneksi database MySQL
@@ -115,19 +111,6 @@ CREATE TABLE tbl_anggota (
     jurusan  VARCHAR(100) NOT NULL
 );
 ```
-
-Setelah tabel di atas dibuat, jalankan juga migrasi untuk fitur **Rekap**
-(menambah tabel Fakultas & Prodi, serta kolom relasi di `tbl_mhs`):
-
-```
-sql/migration_rekap.sql
-```
-
-File ini membuat `tbl_fakultas` dan `tbl_prodi`, menambahkan kolom
-`kode_fakultas`, `kode_prodi`, `angkatan` ke `tbl_mhs`, dan mengisi data
-awal fakultas/prodi. Status kelulusan dan IPK pada halaman Rekap tidak
-disimpan sebagai kolom baru, keduanya dihitung langsung dari `tbl_nilai`
-yang sudah ada (kolom `status` dan `hm`), supaya tidak ada duplikasi data.
 
 ### 3. Konfigurasi Database
 
