@@ -237,7 +237,7 @@ $badgeHm = [
 
 <!-- ===== Rekap 5: Mahasiswa & Dosen Pembimbing ===== -->
 <div class="box">
-    <h3>👥 Mahasiswa &amp; Dosen Pembimbing <span class="tbl-inline-note">(diurutkan)</span></h3>
+    <h3>👥 Mahasiswa &amp; Dosen Pembimbing <span class="tbl-inline-note"></span></h3>
     <p class="subjudul" style="margin-top:-10px;">Pasangan mahasiswa dengan dosen pembimbingnya</p>
 
     <div class="table-wrapper-scroll">
@@ -267,7 +267,7 @@ $badgeHm = [
 
 <!-- ===== Rekap 6: Daftar IPK Mahasiswa ===== -->
 <div class="box">
-    <h3>🏆 Daftar IPK Mahasiswa <span class="tbl-inline-note">(diurutkan)</span></h3>
+    <h3>🏆 Daftar IPK Mahasiswa <span class="tbl-inline-note"></span></h3>
     <p class="subjudul" style="margin-top:-10px;">IPK dikonversi dari huruf mutu nilai mahasiswa</p>
 
     <div class="table-wrapper-scroll">
